@@ -8,11 +8,11 @@ RUN apt-get update && apt-get install -y curl && \
 
 WORKDIR /app
 
-# Install Python deps first (cached layer)
+# Install Python deps
 COPY backend/requirements.txt /app/backend/requirements.txt
 RUN pip install --no-cache-dir -r /app/backend/requirements.txt
 
-# Install Node deps (cached layer)
+# Install Node deps
 COPY frontend/package.json frontend/package-lock.json* /app/frontend/
 RUN cd /app/frontend && npm install
 
@@ -25,7 +25,8 @@ RUN cd /app/frontend && npx vite build && \
     rm -rf /app/backend/static && \
     cp -r /app/frontend/dist /app/backend/static
 
-# Run from backend directory so imports work
-WORKDIR /app/backend
+# Start script
+RUN echo '#!/bin/bash\ncd /app/backend && python -m uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}' > /app/start.sh && chmod +x /app/start.sh
+
 EXPOSE 8000
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["/bin/bash", "/app/start.sh"]
