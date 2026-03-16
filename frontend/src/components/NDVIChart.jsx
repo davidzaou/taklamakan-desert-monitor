@@ -9,7 +9,7 @@ import {
   ReferenceLine,
 } from "recharts";
 import { useLanguage } from "../i18n/LanguageContext";
-import Spinner from "./Spinner";
+import SkeletonCard from "./SkeletonCard";
 
 export default function NDVIChart({ data, loading }) {
   const { t } = useLanguage();
@@ -18,7 +18,7 @@ export default function NDVIChart({ data, loading }) {
     return (
       <div className="chart-container">
         <h3>{t("vegetationTrend")}</h3>
-        <Spinner />
+        <SkeletonCard variant="chart" height={220} />
       </div>
     );
   }

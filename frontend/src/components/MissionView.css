@@ -154,7 +154,7 @@
 
 .mission-section-desc {
   font-size: 14px;
-  color: #6a7a8a;
+  color: var(--text-secondary);
   margin: 0 0 24px;
   line-height: 1.5;
 }
@@ -168,13 +168,17 @@
 }
 
 .mission-problem-card {
-  background: #111922;
-  border: 1px solid #1e2a3a;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: 12px;
   padding: 24px 20px;
   text-align: center;
   transition: border-color 0.2s;
+  animation: fadeSlideUp 0.4s ease both;
 }
+.mission-problem-card:nth-child(1) { animation-delay: 0s; }
+.mission-problem-card:nth-child(2) { animation-delay: 0.08s; }
+.mission-problem-card:nth-child(3) { animation-delay: 0.16s; }
 
 .mission-problem-card:hover {
   border-color: #2a3a4a;
@@ -190,7 +194,7 @@
 .problem-unit {
   display: block;
   font-size: 13px;
-  color: #6a7a8a;
+  color: var(--text-secondary);
   margin-bottom: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -212,11 +216,15 @@
 
 .mission-pillar {
   border: 1px solid;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   padding: 24px 20px;
   position: relative;
   transition: transform 0.2s, box-shadow 0.2s;
+  animation: fadeSlideUp 0.4s ease both;
 }
+.mission-pillar:nth-child(1) { animation-delay: 0s; }
+.mission-pillar:nth-child(2) { animation-delay: 0.1s; }
+.mission-pillar:nth-child(3) { animation-delay: 0.2s; }
 
 .mission-pillar.clickable {
   cursor: pointer;
@@ -224,7 +232,7 @@
 
 .mission-pillar:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-lg);
 }
 
 .pillar-header {
@@ -261,7 +269,7 @@
 
 .pillar-subtitle {
   font-size: 12px;
-  color: #6a7a8a;
+  color: var(--text-secondary);
 }
 
 .pillar-desc {
@@ -346,7 +354,7 @@
 
 .flow-h-desc {
   font-size: 11px;
-  color: #6a7a8a;
+  color: var(--text-secondary);
   line-height: 1.4;
   max-width: 130px;
 }
@@ -368,13 +376,18 @@
 }
 
 .mission-stat-card {
-  background: #111922;
-  border: 1px solid #1e2a3a;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: 12px;
   padding: 20px;
   text-align: center;
   transition: border-color 0.2s;
+  animation: fadeSlideUp 0.4s ease both;
 }
+.mission-stat-card:nth-child(1) { animation-delay: 0s; }
+.mission-stat-card:nth-child(2) { animation-delay: 0.06s; }
+.mission-stat-card:nth-child(3) { animation-delay: 0.12s; }
+.mission-stat-card:nth-child(4) { animation-delay: 0.18s; }
 
 .mission-stat-card:hover {
   border-color: #2a3a4a;
@@ -389,7 +402,7 @@
 .mission-stat-label {
   display: block;
   font-size: 12px;
-  color: #6a7a8a;
+  color: var(--text-secondary);
   margin-top: 4px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -426,7 +439,7 @@
 
 .field-site-card span {
   font-size: 12px;
-  color: #6a7a8a;
+  color: var(--text-secondary);
 }
 
 /* ── About ── */
@@ -461,7 +474,7 @@
 .founder-info strong {
   display: block;
   font-size: 11px;
-  color: #6a7a8a;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.8px;
   margin-bottom: 4px;
@@ -501,7 +514,7 @@
 
 .mission-value span {
   font-size: 12px;
-  color: #6a7a8a;
+  color: var(--text-secondary);
   line-height: 1.5;
 }
 

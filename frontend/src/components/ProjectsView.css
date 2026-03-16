@@ -1,0 +1,377 @@
+/* ===== Projects View v2 ===== */
+.pv2-view {
+  padding: 32px 24px;
+  overflow-y: auto;
+  flex: 1;
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.pv2-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pv2-header h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  color: #e0e0e0;
+}
+
+.pv2-subtitle {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin: 0;
+}
+
+.pv2-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #16213e;
+  border: 1px solid #2a2a4a;
+  border-radius: 8px;
+  padding: 8px 14px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.pv2-search input {
+  background: transparent;
+  border: none;
+  color: #e0e0e0;
+  font-size: 13px;
+  outline: none;
+  width: 180px;
+}
+
+/* ===== Filter Tabs ===== */
+.pv2-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.pv2-tab {
+  padding: 6px 16px;
+  border: 1px solid #2a2a4a;
+  border-radius: 20px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.pv2-tab:hover {
+  border-color: #4a4a6a;
+  color: #c0c0d0;
+}
+
+.pv2-tab.active {
+  background: rgba(145, 207, 96, 0.12);
+  border-color: #91cf60;
+  color: #91cf60;
+}
+
+/* ===== Section Title ===== */
+.pv2-section-title {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pv2-count {
+  font-size: 11px;
+  background: #2a2a4a;
+  color: var(--text-secondary);
+  padding: 1px 8px;
+  border-radius: 10px;
+}
+
+/* ===== Our Initiatives ===== */
+.pv2-initiatives {
+  margin-bottom: 32px;
+}
+
+.pv2-initiative-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.pv2-initiative-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-secondary);
+  border-top: 4px solid;
+  border-radius: 12px;
+  padding: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  animation: fadeSlideUp 0.4s ease both;
+}
+.pv2-initiative-card:nth-child(1) { animation-delay: 0s; }
+.pv2-initiative-card:nth-child(2) { animation-delay: 0.08s; }
+.pv2-initiative-card:nth-child(3) { animation-delay: 0.16s; }
+
+.pv2-initiative-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.pv2-init-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.pv2-init-icon {
+  font-size: 28px;
+}
+
+.pv2-init-pillar {
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.pv2-init-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #e0e0e0;
+  margin: 0 0 8px;
+}
+
+.pv2-init-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+
+.pv2-init-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid #2a2a4a;
+}
+
+.pv2-init-status {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.pv2-init-next {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* ===== Project Cards ===== */
+.pv2-cards-section {
+  margin-bottom: 24px;
+}
+
+.pv2-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pv2-card {
+  background: #16213e;
+  border: 1px solid #2a2a4a;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.pv2-card:hover {
+  border-color: #3a3a5a;
+}
+
+.pv2-card.pv2-expanded {
+  border-color: #4a4a6a;
+}
+
+.pv2-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  cursor: pointer;
+  gap: 16px;
+}
+
+.pv2-card-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.pv2-category-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pv2-category-dot.vegetation {
+  background: #1a9850;
+}
+
+.pv2-category-dot.project {
+  background: #e07b39;
+}
+
+.pv2-card-info {
+  min-width: 0;
+}
+
+.pv2-card-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e0e0e0;
+  margin: 0 0 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pv2-card-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.pv2-card-meta span {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.pv2-card-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+/* ===== Sparkline ===== */
+.pv2-sparkline-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 120px;
+}
+
+.pv2-sparkline-val {
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.pv2-sparkline-val.up { color: #91cf60; }
+.pv2-sparkline-val.down { color: #d73027; }
+.pv2-sparkline-val.flat { color: #e0a030; }
+
+.pv2-sparkline-empty {
+  width: 120px;
+  text-align: center;
+  font-size: 11px;
+  color: #4a4a6a;
+}
+
+/* ===== Card Detail (expanded) ===== */
+.pv2-card-detail {
+  padding: 0 18px 16px;
+  border-top: 1px solid #1a1a2e;
+  animation: pv2FadeIn 0.2s ease;
+}
+
+@keyframes pv2FadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.pv2-card-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 14px 0;
+}
+
+.pv2-card-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pv2-stat {
+  background: #0d1117;
+  border-radius: 8px;
+  padding: 8px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pv2-stat-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.pv2-stat-val {
+  font-size: 13px;
+  color: #e0e0e0;
+  font-weight: 600;
+}
+
+/* ===== Empty State ===== */
+.pv2-empty {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .pv2-view {
+    padding: 16px;
+  }
+
+  .pv2-initiative-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pv2-sparkline-wrapper {
+    display: none;
+  }
+
+  .pv2-header {
+    flex-direction: column;
+  }
+}

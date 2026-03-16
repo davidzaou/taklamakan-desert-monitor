@@ -28,7 +28,7 @@
 }
 
 .news-hero .news-hero-sub {
-  color: #8b949e;
+  color: var(--text-secondary);
   font-size: 14px;
   margin: 0 0 20px;
 }
@@ -65,7 +65,7 @@
   border-radius: 16px;
   border: 1px solid #1e2a3a;
   background: transparent;
-  color: #8b949e;
+  color: var(--text-secondary);
   font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
@@ -98,19 +98,26 @@
 .news-card {
   display: flex;
   flex-direction: column;
-  background: #111922;
-  border: 1px solid #1e2a3a;
-  border-radius: 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
   padding: 20px;
   text-decoration: none;
   color: inherit;
   transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  animation: fadeSlideUp 0.4s ease both;
 }
+.news-card:nth-child(1) { animation-delay: 0s; }
+.news-card:nth-child(2) { animation-delay: 0.06s; }
+.news-card:nth-child(3) { animation-delay: 0.12s; }
+.news-card:nth-child(4) { animation-delay: 0.18s; }
+.news-card:nth-child(5) { animation-delay: 0.24s; }
+.news-card:nth-child(6) { animation-delay: 0.30s; }
 
 .news-card:hover {
   transform: translateY(-3px);
   border-color: #30414f;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-md);
 }
 
 /* gradient placeholder stripe */
@@ -142,7 +149,7 @@
 
 .news-card-desc {
   font-size: 13px;
-  color: #8b949e;
+  color: var(--text-secondary);
   line-height: 1.5;
   margin: 0 0 auto;
   padding-bottom: 14px;
@@ -188,7 +195,7 @@
 }
 
 .news-cta-section p {
-  color: #8b949e;
+  color: var(--text-secondary);
   font-size: 14px;
   margin: 0 0 14px;
 }

@@ -1,6 +1,6 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
-import { FiCpu, FiZap, FiSun, FiCamera, FiThermometer, FiDroplet, FiCheckCircle, FiAlertCircle, FiClock, FiArrowLeft, FiArrowRight, FiUploadCloud, FiPlay, FiRepeat, FiExternalLink } from "react-icons/fi";
+import { FiCpu, FiZap, FiSun, FiCamera, FiThermometer, FiDroplet, FiCheckCircle, FiAlertCircle, FiClock, FiArrowLeft, FiArrowRight, FiUploadCloud, FiPlay, FiRepeat, FiExternalLink, FiChevronDown, FiChevronUp, FiBook, FiGrid, FiWifi } from "react-icons/fi";
 import "./SnakeRobotView.css";
 
 /* ── Scroll-triggered fade-in ── */
@@ -60,6 +60,45 @@ const BOM = [
   { item: "Wiring & Misc", qty: "\u2014", cost: "$17", note: "Connectors, shrink tube" },
 ];
 
+const BOM_CATEGORIES = [
+  { label: "Servos", value: 42, color: "#ffa726" },
+  { label: "Power", value: 43, color: "#ffc107" },
+  { label: "Electronics", value: 25, color: "#4fc3f7" },
+  { label: "Misc", value: 17, color: "#7c4dff" },
+  { label: "Structure", value: 15, color: "#8a9aaa" },
+  { label: "Sensors", value: 7, color: "#66bb6a" },
+];
+
+const IMPACT_STATS = [
+  { valueEn: "500,000+", valueZh: "50万+", labelEn: "hectares of green belt along Taklimakan", labelZh: "塔克拉玛干沙漠绿化带面积（公顷）" },
+  { valueEn: "~85M", valueZh: "~8500万", labelEn: "saplings planted annually in Xinjiang", labelZh: "新疆每年种植的树苗" },
+  { valueEn: "15–30%", valueZh: "15–30%", labelEn: "first-year sapling mortality rate", labelZh: "树苗第一年死亡率" },
+  { valueEn: "6×", valueZh: "6×", labelEn: "faster than manual inspection per hectare", labelZh: "比人工巡检每公顷快" },
+];
+
+const ROBOT_VS_MANUAL = [
+  { metricEn: "Speed", metricZh: "速度", robotEn: "~50 trees/hr", robotZh: "~50棵/小时", manualEn: "~8 trees/hr", manualZh: "~8棵/小时" },
+  { metricEn: "Heat Risk", metricZh: "中暑风险", robotEn: "None", robotZh: "无", manualEn: "Severe (>45°C)", manualZh: "严重 (>45°C)" },
+  { metricEn: "Data Consistency", metricZh: "数据一致性", robotEn: "GPS-tagged, repeatable", robotZh: "GPS标记，可重复", manualEn: "Varies by worker", manualZh: "因人而异" },
+  { metricEn: "Soil Moisture", metricZh: "土壤湿度", robotEn: "Measured at every tree", robotZh: "每棵树都测量", manualEn: "Rarely measured", manualZh: "很少测量" },
+  { metricEn: "Cost / Survey", metricZh: "单次成本", robotEn: "~$0 (solar)", robotZh: "~¥0（太阳能）", manualEn: "~$50/day labor", manualZh: "~¥350/天人工" },
+  { metricEn: "Night Operation", metricZh: "夜间作业", robotEn: "Yes (IR camera)", robotZh: "可以（红外）", manualEn: "No", manualZh: "不可以" },
+];
+
+const REFERENCES = [
+  { authors: "Marvi, H. & Hu, D.L.", year: 2012, title: "Friction enhancement in concertina locomotion of snakes", journal: "Journal of the Royal Society Interface", doi: "10.1098/rsif.2012.0132" },
+  { authors: "Choset, H. et al.", year: 2016, title: "Sidewinding with minimal slip: Snake and robot ascent of sandy slopes", journal: "Science (CMU Biorobotics Lab)", doi: "10.1126/science.1249679" },
+  { authors: "Gong, C. et al.", year: 2016, title: "A study on the design of a snake robot for desert search", journal: "Robotics and Autonomous Systems", doi: "10.1016/j.robot.2015.11.013" },
+];
+
+const SOFTWARE_ARCH = [
+  { id: "esp32", en: "ESP32 Firmware", zh: "ESP32固件", sub: "C++ / Arduino", color: "#ffa726" },
+  { id: "wifi", en: "WiFi Relay", zh: "WiFi传输", sub: "802.11n", color: "#8a9aaa" },
+  { id: "backend", en: "Python Backend", zh: "Python后端", sub: "FastAPI + SQLite", color: "#4fc3f7" },
+  { id: "gee", en: "GEE Integration", zh: "GEE集成", sub: "Earth Engine API", color: "#66bb6a" },
+  { id: "dashboard", en: "Web Dashboard", zh: "Web仪表盘", sub: "React + Leaflet", color: "#7c4dff" },
+];
+
 const TIMELINE_STEPS = [
   { en: "Research & CAD", zh: "\u7814\u7A76\u4E0ECAD", months: "Mar\u2013Apr", status: "current" },
   { en: "3D Print & Assemble", zh: "3D\u6253\u5370\u4E0E\u7EC4\u88C5", months: "Apr\u2013May", status: "upcoming" },
@@ -74,14 +113,130 @@ const FIELD_TESTS = [
   { en: "Failure Documentation", zh: "\u6545\u969C\u8BB0\u5F55", descEn: "Intentionally document what goes wrong \u2014 sand in servos, overheating. These are essay material.", descZh: "\u4E3B\u52A8\u8BB0\u5F55\u6545\u969C\u2014\u2014\u6C99\u5B50\u8FDB\u820D\u673A\u3001\u8FC7\u70ED\u3002\u8FD9\u4E9B\u662F\u7533\u8BF7\u7D20\u6750\u3002" },
 ];
 
+const SEGMENT_INFO = [
+  { en: "Head — ESP32-CAM module", zh: "头部 — ESP32-CAM模块", sensor: true },
+  { en: "Segment 2 — structural link", zh: "第2节 — 结构连接", sensor: false },
+  { en: "Segment 3 — structural link", zh: "第3节 — 结构连接", sensor: false },
+  { en: "Segment 4 — DHT22 temp/humidity", zh: "第4节 — DHT22温湿度", sensor: true },
+  { en: "Segment 5 — structural link", zh: "第5节 — 结构连接", sensor: false },
+  { en: "Segment 6 — soil moisture probe", zh: "第6节 — 土壤湿度探针", sensor: true },
+  { en: "Segment 7 — battery bay A", zh: "第7节 — 电池舱A", sensor: false },
+  { en: "Segment 8 — battery bay B", zh: "第8节 — 电池舱B", sensor: false },
+];
+
+/* ── Terrain SVG icons ── */
+const TerrainIcon = ({ type }) => {
+  const icons = {
+    "Loose Sand": <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M2 10c2-2 4 2 6 0s4 2 6 0"/><path d="M2 6c2-2 4 2 6 0s4 2 6 0" opacity="0.5"/></svg>,
+    "Dunes": <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 13l4-7 4 7"/><path d="M7 13l4-9 4 9" opacity="0.7"/></svg>,
+    "Rocks": <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 13l3-5 2 2 3-4 4 7z"/></svg>,
+    "Irrigation": <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M4 3v10"/><path d="M8 3v10"/><path d="M12 3v10"/><path d="M2 8h12" opacity="0.4"/></svg>,
+    "Vegetation": <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 14V7"/><path d="M8 9c-3-1-4-4-3-6 2 1 4 3 3 6"/><path d="M8 7c3-1 4-4 3-6-2 1-4 3-3 6"/></svg>,
+  };
+  return icons[type] || null;
+};
+
+/* ── Radar chart helper ── */
+function radarPoints(values, cx, cy, r) {
+  return values.map((v, i) => {
+    const angle = (Math.PI * 2 * i) / values.length - Math.PI / 2;
+    const x = cx + (v / 10) * r * Math.cos(angle);
+    const y = cy + (v / 10) * r * Math.sin(angle);
+    return `${x},${y}`;
+  }).join(" ");
+}
+
+/* ── Section nav config ── */
+const NAV_SECTIONS = [
+  { id: "hero", en: "Top", zh: "顶部" },
+  { id: "impact", en: "Impact", zh: "影响" },
+  { id: "gap", en: "Gap", zh: "空白" },
+  { id: "why-snake", en: "Why Snake", zh: "为什么蛇" },
+  { id: "tech-details", en: "Tech Details", zh: "技术细节" },
+  { id: "software", en: "Software", zh: "软件" },
+  { id: "sensors", en: "Sensors", zh: "传感器" },
+  { id: "power", en: "Power", zh: "充电站" },
+  { id: "use-case", en: "Use Case", zh: "任务示例" },
+  { id: "references", en: "Research", zh: "研究" },
+  { id: "media", en: "Media", zh: "媒体" },
+];
+
 export default function SnakeRobotView({ onNavigate }) {
   const { lang } = useLanguage();
   const isZh = lang === "zh";
+  const [hoveredSegment, setHoveredSegment] = useState(null);
+  const [techOpen, setTechOpen] = useState(false);
+  const [radarHighlight, setRadarHighlight] = useState(null);
+  const [activeSection, setActiveSection] = useState("hero");
+
+  const pageRef = useRef(null);
+
+  /* ── Section nav IntersectionObserver ── */
+  useEffect(() => {
+    const page = pageRef.current;
+    if (!page) return;
+    const sectionEls = NAV_SECTIONS.map(s => page.querySelector(`[data-section="${s.id}"]`)).filter(Boolean);
+    const obs = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.dataset.section);
+          }
+        }
+      },
+      { root: page, rootMargin: "-10% 0px -60% 0px", threshold: 0 }
+    );
+    sectionEls.forEach(el => obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
+
+  const scrollToSection = useCallback((id) => {
+    const page = pageRef.current;
+    if (!page) return;
+    const el = page.querySelector(`[data-section="${id}"]`);
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
+  /* ── Donut chart computation ── */
+  const total = BOM_CATEGORIES.reduce((s, c) => s + c.value, 0);
+  const circumference = 2 * Math.PI * 52;
+  let donutOffset = 0;
+  const donutSegments = BOM_CATEGORIES.map(cat => {
+    const len = (cat.value / total) * circumference;
+    const seg = { ...cat, dashArray: `${len} ${circumference - len}`, dashOffset: -donutOffset };
+    donutOffset += len;
+    return seg;
+  });
 
   return (
-    <div className="snake-page">
+    <div className="snake-page" ref={pageRef}>
+      {/* ── Section Nav Dots ── */}
+      <nav className="section-nav">
+        {NAV_SECTIONS.map(s => (
+          <button
+            key={s.id}
+            className={`section-nav-dot ${activeSection === s.id ? "active" : ""}`}
+            onClick={() => scrollToSection(s.id)}
+          >
+            <span className="section-nav-label">{isZh ? s.zh : s.en}</span>
+          </button>
+        ))}
+      </nav>
+
       {/* ── HERO ── */}
-      <section className="snake-hero">
+      <section className="snake-hero" data-section="hero">
+        <svg className="snake-hero-bg" viewBox="0 0 800 200" preserveAspectRatio="xMidYMid slice">
+          <path d="M0 160 Q200 120 400 150 Q600 180 800 140 L800 200 L0 200Z" fill="#c9a96e" opacity="0.08"/>
+          <path d="M0 170 Q200 150 400 165 Q600 180 800 160 L800 200 L0 200Z" fill="#c9a96e" opacity="0.05"/>
+          <g className="snake-hero-serpent">
+            <path d="M100 100 C160 70 220 130 280 100 C340 70 400 130 460 100" stroke="#66bb6a" strokeWidth="3" fill="none" opacity="0.25" strokeLinecap="round"/>
+          </g>
+          <g opacity="0.06" transform="translate(650,120)">
+            <line x1="0" y1="0" x2="0" y2="-30" stroke="#66bb6a" strokeWidth="2"/>
+            <ellipse cx="-6" cy="-28" rx="6" ry="10" fill="#66bb6a"/>
+            <ellipse cx="6" cy="-34" rx="5" ry="8" fill="#66bb6a"/>
+          </g>
+        </svg>
         <div className="snake-hero-badge">
           <FiCpu size={14} />
           {isZh ? "\u7B2C\u4E8C\u5C42 \u00B7 \u5730\u9762\u5DE1\u903B" : "Pillar 2 \u00B7 Ground Patrol"}
@@ -104,8 +259,46 @@ export default function SnakeRobotView({ onNavigate }) {
         )}
       </section>
 
+      {/* ── WHY THIS MATTERS ── */}
+      <FadeSection className="snake-section" data-section="impact">
+        <h2 className="snake-section-title">
+          {isZh ? "为什么重要" : "Why This Matters"}
+        </h2>
+        <p className="snake-section-desc">
+          {isZh
+            ? "塔克拉玛干沙漠绿化带是人类最大的荒漠化治理工程之一。规模决定了人工巡检不可持续。"
+            : "The Taklimakan green belt is one of humanity's largest desertification-fighting projects. Its scale makes manual inspection unsustainable."}
+        </p>
+        <div className="impact-stats-grid">
+          {IMPACT_STATS.map((s, i) => (
+            <div key={i} className="impact-stat-card">
+              <span className="impact-stat-value">{isZh ? s.valueZh : s.valueEn}</span>
+              <span className="impact-stat-label">{isZh ? s.labelZh : s.labelEn}</span>
+            </div>
+          ))}
+        </div>
+
+        <h3 className="snake-section-title" style={{ fontSize: 16, marginTop: 24 }}>
+          {isZh ? "机器人 vs 人工巡检" : "Robot vs. Manual Inspection"}
+        </h3>
+        <div className="comparison-table">
+          <div className="comp-header">
+            <span>{isZh ? "指标" : "Metric"}</span>
+            <span className="comp-robot">{isZh ? "蛇形机器人" : "Snake Robot"}</span>
+            <span className="comp-manual">{isZh ? "人工" : "Manual"}</span>
+          </div>
+          {ROBOT_VS_MANUAL.map((r, i) => (
+            <div key={i} className="comp-row">
+              <span className="comp-metric">{isZh ? r.metricZh : r.metricEn}</span>
+              <span className="comp-robot-val">{isZh ? r.robotZh : r.robotEn}</span>
+              <span className="comp-manual-val">{isZh ? r.manualZh : r.manualEn}</span>
+            </div>
+          ))}
+        </div>
+      </FadeSection>
+
       {/* ── THE GAP ── */}
-      <FadeSection className="snake-section">
+      <FadeSection className="snake-section" data-section="gap">
         <h2 className="snake-section-title">
           {isZh ? "\u76D1\u6D4B\u7A7A\u767D" : "The Monitoring Gap"}
         </h2>
@@ -130,7 +323,7 @@ export default function SnakeRobotView({ onNavigate }) {
       </FadeSection>
 
       {/* ── WHY SNAKE ── */}
-      <FadeSection className="snake-section">
+      <FadeSection className="snake-section" data-section="why-snake">
         <h2 className="snake-section-title">
           {isZh ? "\u4E3A\u4EC0\u4E48\u662F\u86C7\uFF1F" : "Why a Snake?"}
         </h2>
@@ -147,6 +340,19 @@ export default function SnakeRobotView({ onNavigate }) {
               <div className="bio-bullet fail"><span>{isZh ? "\u8DB3\u5F0F" : "Legs"}</span> {isZh ? "\u523A\u7A7F\u6C99\u58F3\u53D8\u5F97\u4E0D\u7A33" : "punch through crust, unstable"}</div>
               <div className="bio-bullet pass"><span>{isZh ? "\u86C7\u5F62" : "Snake"}</span> {isZh ? "\u5206\u6563\u91CD\u91CF\uFF0C\u7545\u884C\u65E0\u963B" : "distributes weight, glides smoothly"}</div>
             </div>
+            {/* Sidewinding motion explainer */}
+            <div className="sidewind-explainer">
+              <svg viewBox="0 0 240 80" className="sidewind-svg">
+                <line x1="30" y1="70" x2="60" y2="50" stroke="#c9a96e" strokeWidth="1" strokeDasharray="3,3" opacity="0.3"/>
+                <line x1="80" y1="70" x2="110" y2="50" stroke="#c9a96e" strokeWidth="1" strokeDasharray="3,3" opacity="0.3"/>
+                <line x1="130" y1="70" x2="160" y2="50" stroke="#c9a96e" strokeWidth="1" strokeDasharray="3,3" opacity="0.3"/>
+                <path className="sidewind-ghost sidewind-phase1" d="M20 55 C35 35 50 65 65 45 C80 25 95 55 110 40" stroke="#66bb6a" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+                <path className="sidewind-ghost sidewind-phase2" d="M60 55 C75 35 90 65 105 45 C120 25 135 55 150 40" stroke="#66bb6a" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+                <path className="sidewind-ghost sidewind-phase3" d="M100 55 C115 35 130 65 145 45 C160 25 175 55 190 40" stroke="#66bb6a" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+                <path d="M200 47 L215 47 M210 42 L215 47 L210 52" stroke="#66bb6a" strokeWidth="1.5" fill="none" opacity="0.6" strokeLinecap="round"/>
+              </svg>
+              <span className="sidewind-caption">{isZh ? "侧绕运动示意" : "Sidewinding motion"}</span>
+            </div>
           </div>
           <div className="snake-bio-right">
             <div className="snake-body-diagram-v2">
@@ -162,10 +368,24 @@ export default function SnakeRobotView({ onNavigate }) {
               </div>
               <div className="diagram-segments">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="dseg-wrapper" style={{ animationDelay: `${i * 0.12}s` }}>
+                  <div
+                    key={i}
+                    className="dseg-wrapper"
+                    style={{ animationDelay: `${i * 0.12}s` }}
+                    onMouseEnter={() => setHoveredSegment(i)}
+                    onMouseLeave={() => setHoveredSegment(null)}
+                    onClick={() => setHoveredSegment(hoveredSegment === i ? null : i)}
+                  >
                     <div className={`dseg ${i % 2 === 0 ? "dark" : "light"} ${i >= 6 ? "battery" : ""}`}>
                       <span className="dseg-num">{i + 1}</span>
+                      {SEGMENT_INFO[i].sensor && <span className="dseg-sensor-dot" />}
                     </div>
+                    {hoveredSegment === i && (
+                      <div className="dseg-tooltip">
+                        {isZh ? SEGMENT_INFO[i].zh : SEGMENT_INFO[i].en}
+                        <span className="dseg-tooltip-arrow" />
+                      </div>
+                    )}
                     {i < 7 && <div className="dseg-joint" />}
                   </div>
                 ))}
@@ -178,46 +398,200 @@ export default function SnakeRobotView({ onNavigate }) {
         </div>
       </FadeSection>
 
-      {/* ── TERRAIN CHART ── */}
-      <FadeSection className="snake-section">
+      {/* ── TECHNICAL DETAILS ACCORDION ── */}
+      <section className="snake-section" data-section="tech-details">
         <h2 className="snake-section-title">
-          {isZh ? "\u5730\u5F62\u6027\u80FD\u5BF9\u6BD4" : "Terrain Performance"}
+          {isZh ? "技术细节" : "Technical Details"}
         </h2>
-        <div className="terrain-chart">
-          <div className="terrain-legend">
-            <span><span className="t-dot" style={{ background: "#66bb6a" }} />{isZh ? "\u86C7\u5F62" : "Snake"}</span>
-            <span><span className="t-dot" style={{ background: "#4fc3f7" }} />{isZh ? "\u8F6E\u5F0F" : "Wheeled"}</span>
-            <span><span className="t-dot" style={{ background: "#ffa726" }} />{isZh ? "\u8DB3\u5F0F" : "Legged"}</span>
-          </div>
-          {TERRAIN.map((t) => (
-            <div key={t.en} className="terrain-row">
-              <span className="terrain-label">{isZh ? t.zh : t.en}</span>
-              <div className="terrain-bars">
-                <div className="t-bar" style={{ width: `${t.snake * 10}%`, background: "#66bb6a" }}><span>{t.snake}</span></div>
-                <div className="t-bar" style={{ width: `${t.wheeled * 10}%`, background: "#4fc3f7" }}><span>{t.wheeled}</span></div>
-                <div className="t-bar" style={{ width: `${t.legged * 10}%`, background: "#ffa726" }}><span>{t.legged}</span></div>
+        <div className="tech-summary" onClick={() => setTechOpen(!techOpen)}>
+          <span className="tech-summary-text">
+            {isZh
+              ? "$149 总计 · 8 段 · 7 舵机 · 5 种地形"
+              : "$149 total · 8 segments · 7 servos · 5 terrain types"}
+          </span>
+          <span className="tech-summary-toggle">
+            {techOpen ? <FiChevronUp size={18} /> : <FiChevronDown size={18} />}
+          </span>
+        </div>
+
+        <div className={`tech-details-body ${techOpen ? "open" : ""}`}>
+          {/* ── RADAR CHART (Terrain Performance) ── */}
+          <div className="snake-section">
+            <h3 className="snake-section-title" style={{ fontSize: 16 }}>
+              {isZh ? "\u5730\u5F62\u6027\u80FD\u5BF9\u6BD4" : "Terrain Performance"}
+            </h3>
+            <div className="radar-chart-wrapper">
+              <svg className="radar-svg" viewBox="0 0 300 280">
+                {/* Grid pentagons */}
+                {[3, 6, 9].map(level => (
+                  <polygon key={level} className="radar-grid-line" points={radarPoints(Array(5).fill(level), 150, 130, 100)} />
+                ))}
+                {/* Axis lines */}
+                {TERRAIN.map((_, i) => {
+                  const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
+                  return <line key={i} className="radar-axis-line" x1={150} y1={130} x2={150 + 100 * Math.cos(angle)} y2={130 + 100 * Math.sin(angle)} />;
+                })}
+                {/* Axis labels */}
+                {TERRAIN.map((t, i) => {
+                  const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
+                  const lx = 150 + 118 * Math.cos(angle);
+                  const ly = 130 + 118 * Math.sin(angle);
+                  return <text key={i} className="radar-label" x={lx} y={ly}>{isZh ? t.zh : t.en}</text>;
+                })}
+                {/* Data polygons */}
+                <polygon
+                  className={`radar-polygon ${radarHighlight && radarHighlight !== "snake" ? "dimmed" : ""} ${radarHighlight === "snake" ? "highlighted" : ""}`}
+                  points={radarPoints(TERRAIN.map(t => t.snake), 150, 130, 100)}
+                  fill="#66bb6a" stroke="#66bb6a"
+                />
+                <polygon
+                  className={`radar-polygon ${radarHighlight && radarHighlight !== "wheeled" ? "dimmed" : ""} ${radarHighlight === "wheeled" ? "highlighted" : ""}`}
+                  points={radarPoints(TERRAIN.map(t => t.wheeled), 150, 130, 100)}
+                  fill="#4fc3f7" stroke="#4fc3f7"
+                />
+                <polygon
+                  className={`radar-polygon ${radarHighlight && radarHighlight !== "legged" ? "dimmed" : ""} ${radarHighlight === "legged" ? "highlighted" : ""}`}
+                  points={radarPoints(TERRAIN.map(t => t.legged), 150, 130, 100)}
+                  fill="#ffa726" stroke="#ffa726"
+                />
+              </svg>
+              <div className="radar-legend">
+                <span className="radar-legend-item" onMouseEnter={() => setRadarHighlight("snake")} onMouseLeave={() => setRadarHighlight(null)}>
+                  <span className="t-dot" style={{ background: "#66bb6a" }} />{isZh ? "\u86C7\u5F62" : "Snake"}
+                </span>
+                <span className="radar-legend-item" onMouseEnter={() => setRadarHighlight("wheeled")} onMouseLeave={() => setRadarHighlight(null)}>
+                  <span className="t-dot" style={{ background: "#4fc3f7" }} />{isZh ? "\u8F6E\u5F0F" : "Wheeled"}
+                </span>
+                <span className="radar-legend-item" onMouseEnter={() => setRadarHighlight("legged")} onMouseLeave={() => setRadarHighlight(null)}>
+                  <span className="t-dot" style={{ background: "#ffa726" }} />{isZh ? "\u8DB3\u5F0F" : "Legged"}
+                </span>
               </div>
+              {/* Per-terrain bar breakdown */}
+              <div className="terrain-bars-detail">
+                {TERRAIN.map((t) => (
+                  <div key={t.en} className="terrain-row">
+                    <span className="terrain-label"><TerrainIcon type={t.en} />{isZh ? t.zh : t.en}</span>
+                    <div className="terrain-bars">
+                      <div className="t-bar" style={{ width: `${t.snake * 10}%`, background: "#66bb6a" }}><span>{t.snake}</span></div>
+                      <div className="t-bar" style={{ width: `${t.wheeled * 10}%`, background: "#4fc3f7" }}><span>{t.wheeled}</span></div>
+                      <div className="t-bar" style={{ width: `${t.legged * 10}%`, background: "#ffa726" }}><span>{t.legged}</span></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ── SPECS ── */}
+          <div className="snake-section">
+            <h3 className="snake-section-title" style={{ fontSize: 16 }}>{isZh ? "\u6838\u5FC3\u89C4\u683C" : "Core Specifications"}</h3>
+            <div className="snake-specs-grid">
+              {SPECS.map((s, i) => (
+                <div key={i} className="snake-spec-card">
+                  <span className="spec-value">{s.value}</span>
+                  <span className="spec-label">{isZh ? s.labelZh : s.labelEn}</span>
+                  <span className="spec-detail">{s.detail}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── BOM ── */}
+          <div className="snake-section">
+            <h3 className="snake-section-title" style={{ fontSize: 16 }}>{isZh ? "\u7269\u6599\u6E05\u5355" : "Bill of Materials"}</h3>
+            {/* Donut Chart */}
+            <div className="bom-donut-wrapper">
+              <div className="bom-donut-svg-wrapper">
+                <svg width="140" height="140" viewBox="0 0 140 140">
+                  {donutSegments.map((seg, i) => (
+                    <circle
+                      key={i}
+                      className="donut-segment"
+                      cx="70" cy="70" r="52"
+                      fill="none"
+                      stroke={seg.color}
+                      strokeWidth="16"
+                      strokeDasharray={seg.dashArray}
+                      strokeDashoffset={seg.dashOffset}
+                      transform="rotate(-90 70 70)"
+                    />
+                  ))}
+                  <text className="donut-center-total" x="70" y="66" textAnchor="middle">$149</text>
+                  <text className="donut-center-label" x="70" y="82" textAnchor="middle">Total</text>
+                </svg>
+              </div>
+              <div className="donut-legend">
+                {BOM_CATEGORIES.map((cat, i) => (
+                  <span key={i} className="donut-legend-item">
+                    <span className="donut-legend-swatch" style={{ background: cat.color }} />
+                    {cat.label} ${cat.value}
+                  </span>
+                ))}
+              </div>
+            </div>
+            {/* BOM Table */}
+            <div className="snake-bom">
+              <div className="bom-header">
+                <span>{isZh ? "\u7EC4\u4EF6" : "Component"}</span>
+                <span>{isZh ? "\u6570\u91CF" : "Qty"}</span>
+                <span>{isZh ? "\u4F30\u4EF7" : "Cost"}</span>
+                <span>{isZh ? "\u5907\u6CE8" : "Notes"}</span>
+              </div>
+              {BOM.map((b, i) => (
+                <div key={i} className="bom-row">
+                  <span>{b.item}</span>
+                  <span>{b.qty}</span>
+                  <span>{b.cost}</span>
+                  <span className="bom-note">{b.note}</span>
+                </div>
+              ))}
+              <div className="bom-total">
+                <span><strong>{isZh ? "\u603B\u8BA1" : "TOTAL"}</strong></span>
+                <span />
+                <span><strong>~$149</strong></span>
+                <span className="bom-note">{isZh ? "\u4E0D\u542B3D\u6253\u5370\u673A" : "Excl. 3D printer"}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── SOFTWARE ARCHITECTURE ── */}
+      <FadeSection className="snake-section" data-section="software">
+        <h2 className="snake-section-title">
+          <FiGrid size={18} />
+          {isZh ? "软件架构" : "Software Architecture"}
+        </h2>
+        <p className="snake-section-desc">
+          {isZh
+            ? "从蛇形机器人到Web仪表盘的完整数据管线，连接地面传感器与卫星影像。"
+            : "End-to-end data pipeline from snake robot to web dashboard, bridging ground sensors with satellite imagery."}
+        </p>
+        <div className="arch-pipeline">
+          {SOFTWARE_ARCH.map((node, i, arr) => (
+            <div key={node.id} className="arch-node-wrapper">
+              <div className="arch-node" style={{ borderColor: node.color }}>
+                <span className="arch-node-name" style={{ color: node.color }}>{isZh ? node.zh : node.en}</span>
+                <span className="arch-node-sub">{node.sub}</span>
+              </div>
+              {i < arr.length - 1 && (
+                <svg className="arch-arrow" width="32" height="16" viewBox="0 0 32 16"><path d="M4 8h20M20 4l4 4-4 4" stroke="#3a4a5a" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              )}
             </div>
           ))}
         </div>
-      </FadeSection>
-
-      {/* ── SPECS ── */}
-      <FadeSection className="snake-section">
-        <h2 className="snake-section-title">{isZh ? "\u6838\u5FC3\u89C4\u683C" : "Core Specifications"}</h2>
-        <div className="snake-specs-grid">
-          {SPECS.map((s, i) => (
-            <div key={i} className="snake-spec-card">
-              <span className="spec-value">{s.value}</span>
-              <span className="spec-label">{isZh ? s.labelZh : s.labelEn}</span>
-              <span className="spec-detail">{s.detail}</span>
-            </div>
-          ))}
+        <div className="arch-integration-note">
+          <FiWifi size={14} style={{ color: "#66bb6a", flexShrink: 0 }} />
+          <span>
+            {isZh
+              ? "充电站同时作为WiFi中继，机器人返回时自动上传数据至后端。后端将地面数据与GEE卫星NDVI叠加分析。"
+              : "The charging station doubles as a WiFi relay. Data uploads automatically when the robot returns. The backend overlays ground-truth data with GEE satellite NDVI for combined analysis."}
+          </span>
         </div>
       </FadeSection>
 
       {/* ── SENSORS ── */}
-      <FadeSection className="snake-section">
+      <FadeSection className="snake-section" data-section="sensors">
         <h2 className="snake-section-title">{isZh ? "\u4F20\u611F\u5668\u5957\u4EF6" : "Sensor Suite"}</h2>
         <div className="snake-sensors">
           {SENSORS.map((s, i) => {
@@ -239,7 +613,7 @@ export default function SnakeRobotView({ onNavigate }) {
       </FadeSection>
 
       {/* ── POWER ── */}
-      <FadeSection className="snake-section">
+      <FadeSection className="snake-section" data-section="power">
         <h2 className="snake-section-title">
           <FiSun size={18} />
           {isZh ? "\u592A\u9633\u80FD\u5145\u7535\u7AD9" : "Solar Charging Station"}
@@ -278,7 +652,7 @@ export default function SnakeRobotView({ onNavigate }) {
       </FadeSection>
 
       {/* ── CONCRETE USE CASE ── */}
-      <FadeSection className="snake-section">
+      <FadeSection className="snake-section" data-section="use-case">
         <h2 className="snake-section-title">
           {isZh ? "\u5177\u4F53\u4EFB\u52A1\u793A\u4F8B" : "Example Inspection Run"}
         </h2>
@@ -295,38 +669,29 @@ export default function SnakeRobotView({ onNavigate }) {
             <div className="uc-step"><span className="uc-num">4</span><span>{isZh ? "50\u7C73\u5185\u68C0\u67E520\u68F5\u6811\uFF0C\u8017\u65F618\u5206\u949F" : "Inspects 20 trees in 50m, takes 18 minutes"}</span></div>
             <div className="uc-step"><span className="uc-num">5</span><span>{isZh ? "\u751F\u6210\u5B58\u6D3B\u5730\u56FE\uFF1A14\u68F5\u5B58\u6D3B\uFF0C6\u68F5\u6B7B\u4EA1\uFF0C\u6807\u8BB0\u8865\u79CD\u4F4D\u7F6E" : "Outputs survival map: 14 alive, 6 dead, marks replacement locations"}</span></div>
           </div>
+          {/* Data flow diagram */}
+          <div className="data-flow">
+            {[
+              { en: "Snake", zh: "蛇形机器人", icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#66bb6a" strokeWidth="1.5" strokeLinecap="round"><path d="M2 7c2-3 4 1 6-1s4 1 6-1"/><circle cx="13" cy="6" r="1" fill="#66bb6a" stroke="none"/></svg> },
+              { en: "Camera", zh: "拍照", icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#66bb6a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="12" height="9" rx="2"/><circle cx="8" cy="8.5" r="2.5"/><path d="M5 4L6 2h4l1 2"/></svg> },
+              { en: "Soil Probe", zh: "测土壤", icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#66bb6a" strokeWidth="1.5" strokeLinecap="round"><path d="M8 2v10"/><path d="M5 12h6"/><path d="M6 14h4"/></svg> },
+              { en: "Upload", zh: "上传", icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#66bb6a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 10V3M5 5l3-3 3 3"/><path d="M3 11v2h10v-2"/></svg> },
+              { en: "Map", zh: "生成地图", icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#66bb6a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 3l5 2v9l-5-2z"/><path d="M6 5l4-2v9l-4 2z"/><path d="M10 3l5 2v9l-5-2z"/></svg> },
+            ].map((node, i, arr) => (
+              <span key={i} className="data-flow-node">
+                <span className="data-flow-icon">{node.icon}</span>
+                <span className="data-flow-label">{isZh ? node.zh : node.en}</span>
+                {i < arr.length - 1 && (
+                  <svg className="data-flow-arrow" width="20" height="16" viewBox="0 0 20 16"><path d="M2 8h12M11 4l4 4-4 4" stroke="#66bb6a" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                )}
+              </span>
+            ))}
+          </div>
           <p className="use-case-result">
             {isZh
               ? "\u7ED3\u679C\uFF1A\u4E00\u5F20\u536B\u661F\u65E0\u6CD5\u751F\u6210\u7684\u9010\u68F5\u5B58\u6D3B\u5730\u56FE\uFF0C\u65E0\u9700\u5DE5\u4EBA\u5728\u9177\u70ED\u4E2D\u884C\u8D70\u6570\u5C0F\u65F6\u3002"
               : "Result: a per-tree survival map that satellites cannot produce, without workers walking for hours in extreme heat."}
           </p>
-        </div>
-      </FadeSection>
-
-      {/* ── BOM ── */}
-      <FadeSection className="snake-section">
-        <h2 className="snake-section-title">{isZh ? "\u7269\u6599\u6E05\u5355" : "Bill of Materials"}</h2>
-        <div className="snake-bom">
-          <div className="bom-header">
-            <span>{isZh ? "\u7EC4\u4EF6" : "Component"}</span>
-            <span>{isZh ? "\u6570\u91CF" : "Qty"}</span>
-            <span>{isZh ? "\u4F30\u4EF7" : "Cost"}</span>
-            <span>{isZh ? "\u5907\u6CE8" : "Notes"}</span>
-          </div>
-          {BOM.map((b, i) => (
-            <div key={i} className="bom-row">
-              <span>{b.item}</span>
-              <span>{b.qty}</span>
-              <span>{b.cost}</span>
-              <span className="bom-note">{b.note}</span>
-            </div>
-          ))}
-          <div className="bom-total">
-            <span><strong>{isZh ? "\u603B\u8BA1" : "TOTAL"}</strong></span>
-            <span />
-            <span><strong>~$149</strong></span>
-            <span className="bom-note">{isZh ? "\u4E0D\u542B3D\u6253\u5370\u673A" : "Excl. 3D printer"}</span>
-          </div>
         </div>
       </FadeSection>
 
@@ -368,8 +733,59 @@ export default function SnakeRobotView({ onNavigate }) {
         </div>
       </FadeSection>
 
-      {/* ── RESEARCH POSTER ── */}
+      {/* ── ACADEMIC REFERENCES ── */}
+      <FadeSection className="snake-section" data-section="references">
+        <h2 className="snake-section-title">
+          <FiBook size={18} />
+          {isZh ? "文献参考" : "Academic References"}
+        </h2>
+        <p className="snake-section-desc">
+          {isZh
+            ? "本项目设计参考了以下蛇形机器人运动学与沙地移动研究。"
+            : "The design draws on peer-reviewed research in snake robot locomotion and sand mobility."}
+        </p>
+        <div className="references-list">
+          {REFERENCES.map((r, i) => (
+            <div key={i} className="reference-card">
+              <span className="ref-number">[{i + 1}]</span>
+              <div className="ref-body">
+                <span className="ref-authors">{r.authors} ({r.year})</span>
+                <span className="ref-title">{r.title}</span>
+                <span className="ref-journal">{r.journal}</span>
+                <span className="ref-doi">DOI: {r.doi}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </FadeSection>
+
+      {/* ── DESIGN GALLERY ── */}
       <FadeSection className="snake-section">
+        <h2 className="snake-section-title">
+          {isZh ? "设计进展" : "Design Progress"}
+        </h2>
+        <p className="snake-section-desc">
+          {isZh
+            ? "CAD模型与3D打印原型。点击查看大图。"
+            : "CAD models and 3D print prototypes. Click to enlarge."}
+        </p>
+        <div className="design-gallery">
+          {[
+            { src: "/media/snake-cad-full.png", captionEn: "Full assembly — CAD render", captionZh: "完整装配 — CAD渲染" },
+            { src: "/media/snake-cad-segment.png", captionEn: "Single segment detail", captionZh: "单段细节" },
+            { src: "/media/snake-cad-joint.png", captionEn: "Servo joint mechanism", captionZh: "舵机关节结构" },
+            { src: "/media/snake-cad-head.png", captionEn: "Head module with ESP32-CAM", captionZh: "头部模块（含ESP32-CAM）" },
+          ].map((img, i) => (
+            <a key={i} className="gallery-item" href={img.src} target="_blank" rel="noopener noreferrer">
+              <img src={img.src} alt={isZh ? img.captionZh : img.captionEn} className="gallery-img" loading="lazy" />
+              <span className="gallery-caption">{isZh ? img.captionZh : img.captionEn}</span>
+            </a>
+          ))}
+        </div>
+      </FadeSection>
+
+      {/* ── RESEARCH POSTER ── */}
+      <FadeSection className="snake-section" data-section="media">
         <h2 className="snake-section-title">
           {isZh ? "研究海报" : "Research Poster"}
         </h2>

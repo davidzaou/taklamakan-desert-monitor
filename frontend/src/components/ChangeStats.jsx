@@ -1,5 +1,5 @@
 import { useLanguage } from "../i18n/LanguageContext";
-import Spinner from "./Spinner";
+import SkeletonCard from "./SkeletonCard";
 
 export default function ChangeStats({ data, loading }) {
   const { t } = useLanguage();
@@ -8,7 +8,7 @@ export default function ChangeStats({ data, loading }) {
     return (
       <div className="stats-container">
         <h3>{t("changeAnalysis")}</h3>
-        <Spinner />
+        <SkeletonCard variant="stat-grid" />
       </div>
     );
   }

@@ -1,11 +1,11 @@
-const API_BASE = import.meta.env.DEV ? "http://localhost:8000/api" : "/api";
+const API_BASE = import.meta.env.DEV ? "http://localhost:8001/api" : "/api";
 
 export async function fetchPresets() {
   const res = await fetch(`${API_BASE}/presets`);
   return res.json();
 }
 
-export async function fetchTimeseries(geometry, startYear = 2015, endYear = 2025) {
+export async function fetchTimeseries(geometry, startYear = 2015, endYear = new Date().getFullYear()) {
   const res = await fetch(`${API_BASE}/timeseries`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
