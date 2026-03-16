@@ -173,6 +173,7 @@ export const translations = {
     viewSnake: "Snake Robot",
     viewDonate: "Donate",
     viewPlayground: "Satellite Lab",
+    viewResearch: "Ground Research",
     // Year slider milestones
     milestone2003: "Desert Highway shelterbelt completed",
     milestone2024: "Green belt gap closed",
@@ -365,6 +366,7 @@ export const translations = {
     viewSnake: "蛇形机器人",
     viewDonate: "捐赠",
     viewPlayground: "\u536B\u661F\u5B9E\u9A8C\u5BA4",
+    viewResearch: "\u5B9E\u5730\u7814\u7A76",
     // Year slider milestones
     milestone2003: "沙漠公路防护林建成",
     milestone2024: "绿带合拢完成",

@@ -8,8 +8,11 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { FiTrendingUp, FiTrendingDown, FiAlertTriangle, FiEye, FiGitPullRequest, FiRefreshCw } from "react-icons/fi";
+import useDataCache from "../hooks/useDataCache";
+import { fetchDataSource } from "../api/client";
+import "./MonitorView.css";
 
-const API = import.meta.env.DEV ? "http://localhost:8000/api" : "/api";
+const API = import.meta.env.DEV ? "http://localhost:8001/api" : "/api";
 
 const ZONES = [
   { id: "hotan",   label: "Hotan",       bounds: [79.5, 36.8, 80.5, 37.5] },
@@ -21,19 +24,14 @@ const ZONES = [
 
 export default function MonitorView() {
   const { t, lang } = useLanguage();
-  const [dashboard, setDashboard] = useState(null);
+  const { data: dashboard } = useDataCache("dashboard", fetchDashboard);
+  const { data: dataSource } = useDataCache("data-source", fetchDataSource);
   const [zone, setZone] = useState(ZONES[0]);
   const [compareYear, setCompareYear] = useState(2018);
   const [geeStats, setGeeStats] = useState(null);
   const [geeChange, setGeeChange] = useState(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [changeLoading, setChangeLoading] = useState(false);
-  const [dataSource, setDataSource] = useState(null);
-
-  useEffect(() => {
-    fetchDashboard().then(setDashboard).catch(() => {});
-    fetch(`${API}/data-source`).then(r => r.json()).then(setDataSource).catch(() => {});
-  }, []);
 
   const isLive = dataSource?.source === "gee";
 

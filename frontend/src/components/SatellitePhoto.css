@@ -1,0 +1,26 @@
+/* ===== Satellite Photo Component ===== */
+.sat-photo { position:relative; overflow:hidden; border-radius:8px; background:#0d1117; }
+.sat-photo-skeleton { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:40px 20px; color:#5a6a7a; font-size:12px; }
+.sat-photo-pulse { width:40px; height:40px; border:3px solid #1e2a3a; border-top-color:#4fc3f7; border-radius:50%; animation:spin .8s linear infinite; }
+.sat-photo-placeholder { display:flex; align-items:center; justify-content:center; padding:40px 20px; color:#3a4a5a; font-size:12px; background:#111922; border-radius:8px; }
+.sat-photo-img { width:100%; display:block; border-radius:8px; opacity:0; transition:opacity .4s; }
+.sat-photo-img.loaded { opacity:1; }
+.sat-photo-label { position:absolute; bottom:8px; left:8px; display:flex; gap:8px; align-items:center; }
+.sat-photo-label span { background:rgba(0,0,0,.7); color:#ccc; padding:2px 8px; border-radius:3px; font-size:11px; font-weight:600; }
+.sat-photo-src { color:#4fc3f7 !important; }
+
+/* Feature satellite thumbnail */
+.feature-sat-photo { margin-bottom:10px; border-radius:8px; min-height:80px; }
+
+/* ===== Before/After Slider ===== */
+.sat-ba-container { border-radius:10px; overflow:hidden; background:#0d1117; }
+.sat-ba-loading { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:60px 20px; color:#5a6a7a; font-size:13px; }
+.sat-ba-pulse { width:36px; height:36px; border:3px solid #1e2a3a; border-top-color:#91cf60; border-radius:50%; animation:spin .8s linear infinite; }
+.sat-ba-fallback { display:flex; align-items:center; justify-content:center; padding:60px 20px; color:#3a4a5a; font-size:13px; background:#111922; border-radius:10px; }
+.sat-ba-slider { position:relative; cursor:ew-resize; line-height:0; border-radius:10px; overflow:hidden; }
+.sat-ba-img { width:100%; display:block; pointer-events:none; }
+.sat-ba-before { position:absolute; inset:0; overflow:hidden; }
+.sat-ba-line { position:absolute; top:0; bottom:0; width:3px; background:#fff; transform:translateX(-50%); z-index:5; box-shadow:0 0 8px rgba(0,0,0,.5); }
+.sat-ba-handle { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; color:#333; padding:4px 6px; border-radius:20px; font-size:12px; font-weight:700; white-space:nowrap; box-shadow:0 2px 8px rgba(0,0,0,.3); }
+.sat-ba-label-left { position:absolute; top:12px; left:12px; background:rgba(0,0,0,.7); color:#fff; padding:4px 12px; border-radius:4px; font-size:14px; font-weight:700; z-index:4; }
+.sat-ba-label-right { position:absolute; top:12px; right:12px; background:rgba(0,0,0,.7); color:#91cf60; padding:4px 12px; border-radius:4px; font-size:14px; font-weight:700; z-index:4; }

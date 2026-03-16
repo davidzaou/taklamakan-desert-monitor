@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
 import { FiHeart, FiEye, FiMapPin, FiAward, FiChevronRight, FiPlay, FiPause, FiMaximize2 } from "react-icons/fi";
+import "./DonateView.css";
 
 // ─── TIERS ────────────────────────────────────────
 

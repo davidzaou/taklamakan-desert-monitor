@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
+import "./SatellitePhoto.css";
 
-const API = import.meta.env.DEV ? "http://localhost:8000/api" : "/api";
+const API = import.meta.env.DEV ? "http://localhost:8001/api" : "/api";
 
 // In-memory cache: "bounds|year|band" → url
 const _cache = {};
@@ -177,10 +178,11 @@ export function SatelliteBeforeAfter({ bounds, yearBefore, yearAfter, band = "tr
  * Call once on app mount.
  */
 export function prefetchSatelliteImages() {
+  const currentYear = new Date().getFullYear();
   const presets = [
-    { bounds: [79.5, 36.8, 80.5, 37.5], year: 2024, band: "truecolor" },
+    { bounds: [79.5, 36.8, 80.5, 37.5], year: currentYear, band: "truecolor" },
     { bounds: [79.5, 36.8, 80.5, 37.5], year: 2017, band: "truecolor" },
-    { bounds: [79.5, 36.8, 80.5, 37.5], year: 2024, band: "ndvi" },
+    { bounds: [79.5, 36.8, 80.5, 37.5], year: currentYear, band: "ndvi" },
   ];
   for (const p of presets) {
     const key = cacheKey(p.bounds, p.year, p.band);

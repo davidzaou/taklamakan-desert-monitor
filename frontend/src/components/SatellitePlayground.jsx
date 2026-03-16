@@ -3,10 +3,21 @@ import { MapContainer, TileLayer, Polygon, Marker, Popup, useMap, useMapEvents, 
 import L from "leaflet";
 import { useLanguage } from "../i18n/LanguageContext";
 import { fetchGrid, fetchAnalysis, fetchTimeseries, fetchNdviGridCache } from "../api/client";
-import { FiCrosshair, FiLayers, FiSliders, FiX, FiInfo, FiRefreshCw, FiRadio } from "react-icons/fi";
+import { FiCrosshair, FiLayers, FiSliders, FiX, FiInfo, FiRefreshCw, FiRadio, FiPlay, FiPause } from "react-icons/fi";
 import { DESERT_OUTLINE, GREEN_BELT_SEGMENTS } from "../data/mapShapes";
+import { hasCacheEntry } from "../hooks/useDataCache";
 import "leaflet/dist/leaflet.css";
 import "./SatellitePlayground.css";
+
+/* ── Zone presets (ported from SatelliteView) ── */
+const ZONE_PRESETS = [
+  { id: "hotan",   label: "Hotan",       bounds: [[36.8, 79.5], [37.5, 80.5]] },
+  { id: "alar",    label: "Alar",        bounds: [[40.2, 80.5], [40.9, 81.5]] },
+  { id: "korla",   label: "Korla",       bounds: [[41.4, 85.5], [42.0, 86.5]] },
+  { id: "highway", label: "Highway",     bounds: [[37.5, 83.2], [39.5, 84.0]] },
+  { id: "minfeng", label: "Minfeng",     bounds: [[36.8, 82.3], [37.4, 83.2]] },
+  { id: "full",    label: "Full Desert", bounds: [[36, 75], [43, 90]] },
+];
 
 /* ── NDVI helpers ── */
 function ndviColor(v) {
@@ -68,27 +79,42 @@ function NdviOverlay({ grid, bounds, opacity }) {
   useEffect(() => {
     if (!grid || !grid.length || !bounds) return;
 
+    const gridN = Math.round(Math.sqrt(grid.length));
+    const canvasSize = Math.max(gridN, 200);
     const canvas = document.createElement("canvas");
-    const n = Math.round(Math.sqrt(grid.length));
-    canvas.width = n;
-    canvas.height = n;
+    canvas.width = canvasSize;
+    canvas.height = canvasSize;
     const ctx = canvas.getContext("2d");
-    const imgData = ctx.createImageData(n, n);
+    const imgData = ctx.createImageData(canvasSize, canvasSize);
 
     const lats = grid.map(p => p.lat);
     const lngs = grid.map(p => p.lng);
     const minLat = Math.min(...lats), maxLat = Math.max(...lats);
     const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+    const latRange = maxLat - minLat || 1;
+    const lngRange = maxLng - minLng || 1;
 
+    const srcGrid = new Array(gridN * gridN).fill(null);
     for (const p of grid) {
-      const col = Math.round(((p.lng - minLng) / (maxLng - minLng || 1)) * (n - 1));
-      const row = Math.round(((maxLat - p.lat) / (maxLat - minLat || 1)) * (n - 1));
-      const idx = (row * n + col) * 4;
-      const [r, g, b] = ndviColor(p.ndvi);
-      imgData.data[idx] = r;
-      imgData.data[idx + 1] = g;
-      imgData.data[idx + 2] = b;
-      imgData.data[idx + 3] = Math.round(opacity * 255);
+      const col = Math.round(((p.lng - minLng) / lngRange) * (gridN - 1));
+      const row = Math.round(((maxLat - p.lat) / latRange) * (gridN - 1));
+      srcGrid[row * gridN + col] = p.ndvi;
+    }
+
+    const alpha = Math.round(opacity * 255);
+    for (let py = 0; py < canvasSize; py++) {
+      for (let px = 0; px < canvasSize; px++) {
+        const srcCol = Math.round((px / (canvasSize - 1)) * (gridN - 1));
+        const srcRow = Math.round((py / (canvasSize - 1)) * (gridN - 1));
+        const ndvi = srcGrid[srcRow * gridN + srcCol];
+        if (ndvi == null) continue;
+        const [r, g, b] = ndviColor(ndvi);
+        const idx = (py * canvasSize + px) * 4;
+        imgData.data[idx] = r;
+        imgData.data[idx + 1] = g;
+        imgData.data[idx + 2] = b;
+        imgData.data[idx + 3] = alpha;
+      }
     }
     ctx.putImageData(imgData, 0, 0);
 
@@ -170,6 +196,15 @@ function DrawRectangle({ active, onDrawn }) {
   return null;
 }
 
+/* ── FlyToZone helper ── */
+function FlyToZone({ zone }) {
+  const map = useMap();
+  useEffect(() => {
+    if (zone) map.flyToBounds(zone.bounds, { padding: [20, 20], duration: 0.8 });
+  }, [zone, map]);
+  return null;
+}
+
 /* ── MAIN COMPONENT ── */
 export default function SatellitePlayground() {
   const { lang } = useLanguage();
@@ -181,11 +216,27 @@ export default function SatellitePlayground() {
   const [cacheLoading, setCacheLoading] = useState(true);
 
   // State
+  const currentYear = new Date().getFullYear();
   const [mode, setMode] = useState("click");
-  const [year, setYear] = useState(2024);
-  const [yearB, setYearB] = useState(2018);
+  const [year, setYear] = useState(() => {
+    const saved = localStorage.getItem("pg-year");
+    return saved ? +saved : currentYear;
+  });
+  const [yearB, setYearB] = useState(() => {
+    const saved = localStorage.getItem("pg-yearB");
+    return saved ? +saved : 2018;
+  });
   const [tileLayer, setTileLayer] = useState("satellite");
   const [ndviOpacity, setNdviOpacity] = useState(0.7);
+
+  // Zone presets (ported from SatelliteView)
+  const [selectedZone, setSelectedZone] = useState(() => {
+    const savedId = localStorage.getItem("pg-zone");
+    return (savedId && ZONE_PRESETS.find(z => z.id === savedId)) || null;
+  });
+
+  // Time-lapse playback (ported from SatelliteView)
+  const [playing, setPlaying] = useState(false);
 
   // Click inspect
   const [clickedPos, setClickedPos] = useState(null);
@@ -203,8 +254,12 @@ export default function SatellitePlayground() {
   // Panel
   const [panelOpen, setPanelOpen] = useState(false);
 
-  // Load cached NDVI grid on mount (backend fetches from GEE in background)
+  // Load cached NDVI grid on mount — skip if already in data cache
   useEffect(() => {
+    if (hasCacheEntry("ndvi-grid")) {
+      setCacheLoading(false);
+      return;
+    }
     let interval;
     function poll() {
       fetchNdviGridCache().then(res => {
@@ -214,13 +269,49 @@ export default function SatellitePlayground() {
           setCacheLoading(false);
           clearInterval(interval);
         }
-        // if "loading", keep polling
       }).catch(() => {});
     }
     poll();
     interval = setInterval(poll, 3000);
     return () => clearInterval(interval);
   }, []);
+
+  // Persist year/zone selections to localStorage
+  useEffect(() => { localStorage.setItem("pg-year", year); }, [year]);
+  useEffect(() => { localStorage.setItem("pg-yearB", yearB); }, [yearB]);
+  useEffect(() => {
+    if (selectedZone) localStorage.setItem("pg-zone", selectedZone.id);
+  }, [selectedZone]);
+
+  // Time-lapse playback effect (ported from SatelliteView)
+  useEffect(() => {
+    if (!playing) return;
+    const id = setInterval(() => {
+      setYear(y => {
+        if (y >= currentYear) { setPlaying(false); return currentYear; }
+        return y + 1;
+      });
+    }, 800);
+    return () => clearInterval(id);
+  }, [playing, currentYear]);
+
+  // Keyboard shortcuts (ported from SatelliteView)
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT" || e.target.tagName === "TEXTAREA") return;
+      if (e.key === "ArrowLeft") { e.preventDefault(); setYear(y => Math.max(currentYear - 9, y - 1)); }
+      else if (e.key === "ArrowRight") { e.preventDefault(); setYear(y => Math.min(currentYear, y + 1)); }
+      else if (e.key === " ") {
+        e.preventDefault();
+        setPlaying(p => {
+          if (!p) setYear(y => y >= currentYear ? currentYear - 9 : y);
+          return !p;
+        });
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentYear]);
 
   // Desert/green belt polygons
   const desertPolygon = useMemo(() =>
@@ -237,7 +328,6 @@ export default function SatellitePlayground() {
     if (mode !== "click") return;
     const { lat, lng } = latlng;
 
-    // Instant result from cache
     const nearest = findNearest(cachedGrid, lat, lng);
     const ndviNow = nearest ? nearest.ndvi : 0;
     const cls = classifyNdvi(ndviNow);
@@ -251,16 +341,14 @@ export default function SatellitePlayground() {
     setChangeData(null);
     setClickLoading(true);
 
-    // Fetch real timeseries from backend (GEE)
     try {
       const pointGeom = {
         type: "Polygon",
         coordinates: [[[lng - 0.05, lat - 0.05], [lng + 0.05, lat - 0.05], [lng + 0.05, lat + 0.05], [lng - 0.05, lat + 0.05], [lng - 0.05, lat - 0.05]]],
       };
-      const tsResult = await fetchTimeseries(pointGeom, 2016, 2025);
+      const tsResult = await fetchTimeseries(pointGeom, 2016, currentYear);
       const ts = tsResult.data || [];
 
-      // Find NDVI for selected years
       const ndviYear = ts.find(d => d.year === year)?.mean_ndvi ?? ndviNow;
       const ndviYearB = ts.find(d => d.year === yearB)?.mean_ndvi ?? 0;
       const clsUpdated = classifyNdvi(ndviYear);
@@ -276,13 +364,12 @@ export default function SatellitePlayground() {
         loading: false,
       });
     } catch {
-      // Keep the cached data if timeseries fails
       setClickedData(prev => prev ? { ...prev, loading: false, ndviB: 0, change: 0, timeseries: [] } : null);
     }
     setClickLoading(false);
-  }, [mode, year, yearB, cachedGrid, cacheSource]);
+  }, [mode, year, yearB, cachedGrid, cacheSource, currentYear]);
 
-  // Handle drawn rectangle — fetch real GEE grid + change analysis
+  // Handle drawn rectangle
   const handleDrawn = useCallback(async (bounds) => {
     setDrawnBounds(bounds);
     setClickedPos(null);
@@ -325,12 +412,22 @@ export default function SatellitePlayground() {
     if (drawnBounds) handleDrawn(drawnBounds);
   }, [year, yearB]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  function handleZoneClick(zone) {
+    setSelectedZone(zone);
+  }
+
+  function handlePlayToggle() {
+    if (!playing && year >= currentYear) setYear(currentYear - 9);
+    setPlaying(p => !p);
+  }
+
   return (
     <div className="pg-container">
       {/* ── MAP ── */}
       <div className="pg-map-wrapper">
         <MapContainer center={[39.0, 82.5]} zoom={6} minZoom={5} maxZoom={13} zoomControl={false} className="pg-leaflet-map">
           <MapResizer />
+          <FlyToZone zone={selectedZone} />
 
           {tileLayer === "satellite" ? (
             <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" attribution="Esri Satellite" maxZoom={18} />
@@ -365,6 +462,19 @@ export default function SatellitePlayground() {
           <DrawRectangle active={mode === "draw"} onDrawn={handleDrawn} />
         </MapContainer>
 
+        {/* ── ZONE BAR (ported from SatelliteView) ── */}
+        <div className="pg-zone-bar">
+          {ZONE_PRESETS.map(z => (
+            <button
+              key={z.id}
+              className={`pg-zone-btn ${selectedZone?.id === z.id ? "active" : ""}`}
+              onClick={() => handleZoneClick(z)}
+            >
+              {z.label}
+            </button>
+          ))}
+        </div>
+
         {/* ── TOOLBAR ── */}
         <div className="pg-toolbar">
           <button className={`pg-tool-btn ${mode === "click" ? "active" : ""}`} onClick={() => setMode("click")} title={isZh ? "\u70B9\u51FB\u68C0\u67E5" : "Click to inspect"}>
@@ -391,15 +501,19 @@ export default function SatellitePlayground() {
           <div className="pg-year-group">
             <label>{isZh ? "\u5E74\u4EFD" : "Year"}</label>
             <select value={year} onChange={e => setYear(+e.target.value)}>
-              {Array.from({ length: 10 }, (_, i) => 2025 - i).map(y => <option key={y}>{y}</option>)}
+              {Array.from({ length: 10 }, (_, i) => currentYear - i).map(y => <option key={y}>{y}</option>)}
             </select>
           </div>
           <div className="pg-year-group">
             <label>{isZh ? "\u5BF9\u6BD4" : "Compare"}</label>
             <select value={yearB} onChange={e => setYearB(+e.target.value)}>
-              {Array.from({ length: 10 }, (_, i) => 2025 - i).map(y => <option key={y}>{y}</option>)}
+              {Array.from({ length: 10 }, (_, i) => currentYear - i).map(y => <option key={y}>{y}</option>)}
             </select>
           </div>
+          {/* Play/Pause button (ported from SatelliteView) */}
+          <button className="pg-play-btn" onClick={handlePlayToggle} title={isZh ? (playing ? "\u6682\u505C" : "\u64AD\u653E") : (playing ? "Pause" : "Play")}>
+            {playing ? <FiPause size={14} /> : <FiPlay size={14} />}
+          </button>
           {drawnBounds && (
             <div className="pg-year-group">
               <label>{isZh ? "\u900F\u660E\u5EA6" : "Opacity"}</label>
@@ -424,9 +538,12 @@ export default function SatellitePlayground() {
           </div>
         )}
 
+        {/* Year overlay during time-lapse */}
+        {playing && <div className="pg-year-overlay">{year}</div>}
+
         <div className="pg-mode-indicator">
           {mode === "click"
-            ? (isZh ? "\u70B9\u51FB\u5730\u56FE\u4EFB\u610F\u4F4D\u7F6E\u67E5\u770BNDVI\uFF08\u5B9E\u65F6\u536B\u661F\u6570\u636E\uFF09" : "Click anywhere to inspect NDVI (real satellite data)")
+            ? (isZh ? "\u70B9\u51FB\u5730\u56FE\u4EFB\u610F\u4F4D\u7F6E\u67E5\u770BNDVI\uFF08\u5B9E\u65F6\u536B\u661F\u6570\u636E\uFF09 \u2190/\u2192 \u5207\u6362\u5E74\u4EFD \u7A7A\u683C\u64AD\u653E" : "Click anywhere to inspect NDVI \u00B7 \u2190/\u2192 step year \u00B7 Space to play")
             : (isZh ? "\u62D6\u62FD\u7ED8\u5236\u533A\u57DF\u8FDB\u884C\u5206\u6790\uFF08\u5B9E\u65F6\u536B\u661F\u6570\u636E\uFF09" : "Draw a region for analysis (real satellite data)")}
         </div>
       </div>

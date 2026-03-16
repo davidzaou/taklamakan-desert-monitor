@@ -1,0 +1,601 @@
+/* ===== Map Area ===== */
+.map-area {
+  flex: 1;
+  position: relative;
+  min-height: 400px;
+}
+
+.map-fullbleed {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Overlay search/filter on top of map */
+.map-overlay-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.map-overlay-top .search-filter-bar {
+  background: rgba(22, 33, 62, 0.85);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(42, 42, 74, 0.5);
+  padding: 6px 16px;
+  opacity: 0.4;
+  transition: opacity 0.3s;
+}
+.map-overlay-top:hover .search-filter-bar,
+.map-overlay-top .search-filter-bar:focus-within {
+  opacity: 1;
+}
+
+/* ===== Custom Map Markers ===== */
+.custom-marker {
+  background: none !important;
+  border: none !important;
+}
+
+.marker-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50% 50% 50% 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-45deg);
+  box-shadow: var(--shadow-sm);
+}
+
+.marker-icon svg {
+  width: 18px;
+  height: 18px;
+  transform: rotate(45deg);
+}
+
+/* ===== Slide Panel ===== */
+.slide-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 400px;
+  height: 100%;
+  background: #1a1a2e;
+  border-left: 1px solid #2a2a4a;
+  z-index: 1001;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  overflow-y: auto;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.25);
+}
+
+.slide-panel.open {
+  transform: translateX(0);
+}
+
+.panel-close-btn {
+  position: sticky;
+  top: 0;
+  float: right;
+  margin: 10px;
+  background: #0d1117;
+  border: 1px solid #3a3a5a;
+  color: #ccc;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 0.2s;
+}
+
+.panel-close-btn:hover {
+  background: #d73027;
+  color: white;
+  border-color: #d73027;
+}
+
+.panel-content {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ===== Feature Details ===== */
+.feature-details {
+  background: #16213e;
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.feature-header {
+  margin-bottom: 10px;
+}
+
+.category-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 6px;
+}
+
+.feature-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #e0e0e0;
+  margin: 4px 0 0;
+}
+
+.feature-description {
+  font-size: 13px;
+  color: #aaa;
+  line-height: 1.5;
+  margin: 8px 0;
+}
+
+.feature-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.feature-stat {
+  background: #0d1117;
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+
+.feature-stat-label {
+  display: block;
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.feature-stat-value {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e0e0e0;
+  margin-top: 2px;
+}
+
+/* ===== Timeline (panel component) ===== */
+.timeline {
+  background: #16213e;
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.timeline-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.timeline-section label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.timeline-section input[type="range"] {
+  width: 120px;
+  accent-color: #1a9850;
+}
+
+.timeline-section select {
+  background: #0d1117;
+  color: #e0e0e0;
+  border: 1px solid #3a3a5a;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.year-display {
+  font-size: 16px;
+  font-weight: 700;
+  color: #91cf60;
+  min-width: 40px;
+  text-align: center;
+}
+
+.year-arrow {
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+.btn-compare {
+  background: #4a90d9;
+  color: white;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.btn-compare:hover {
+  background: #357abd;
+}
+
+/* ===== Legend ===== */
+.legend {
+  background: #16213e;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.legend h4 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+  font-size: 12px;
+}
+
+.legend-color {
+  width: 16px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.legend-label {
+  flex: 1;
+  color: #ccc;
+}
+
+.legend-range {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-family: var(--font-mono);
+}
+
+/* ===== Chart ===== */
+.chart-container {
+  background: #16213e;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.chart-container h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: #ccc;
+}
+
+/* ===== Compare Slider ===== */
+.compare-slider-container {
+  background: #16213e;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.compare-slider-container h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: #ccc;
+}
+
+.compare-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #91cf60;
+}
+
+.compare-year-label {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #91cf60;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ===== Change Stats ===== */
+.stats-container {
+  background: #16213e;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.stats-container h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: #ccc;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.stat-card {
+  background: #0d1117;
+  border-radius: 6px;
+  padding: 10px;
+  border-left: 3px solid #333;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.stat-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+/* ===== Export Buttons ===== */
+.export-buttons {
+  display: flex;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.export-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #0d1117;
+  border: 1px solid #3a3a5a;
+  color: #ccc;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.export-btn:hover {
+  background: #2a2a4a;
+  color: #91cf60;
+  border-color: #91cf60;
+}
+
+/* ===== Map Year Slider ===== */
+.year-slider-toggle {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #2a2a4a;
+  background: rgba(13, 17, 23, 0.85);
+  backdrop-filter: blur(8px);
+  color: #91cf60;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
+}
+.year-slider-toggle:hover {
+  background: rgba(13, 17, 23, 0.95);
+  border-color: #91cf60;
+  transform: translateX(-50%) scale(1.1);
+}
+
+.map-year-slider {
+  position: absolute;
+  bottom: 16px;
+  left: 80px;
+  right: 80px;
+  z-index: 10;
+  background: rgba(13, 17, 23, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid #2a2a4a;
+  border-radius: 12px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.year-close-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid #3a3a5a;
+  background: transparent;
+  color: #6a6a8a;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.year-close-btn:hover {
+  color: #ef5350;
+  border-color: #ef5350;
+}
+
+.year-play-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #3a3a5a;
+  background: #1a1a2e;
+  color: #91cf60;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.year-play-btn:hover {
+  background: #2a2a4a;
+  border-color: #91cf60;
+}
+
+.year-big {
+  font-size: 22px;
+  font-weight: 700;
+  color: #91cf60;
+  min-width: 50px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.slider-track-wrapper {
+  flex: 1;
+  position: relative;
+  height: 24px;
+  display: flex;
+  align-items: center;
+}
+
+.year-range-input {
+  width: 100%;
+  height: 4px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: #2a2a4a;
+  border-radius: 2px;
+  outline: none;
+  position: relative;
+  z-index: 2;
+}
+
+.year-range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #91cf60;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(145, 207, 96, 0.5);
+}
+
+.year-range-input::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #91cf60;
+  cursor: pointer;
+  border: none;
+}
+
+.slider-fill {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 4px;
+  background: linear-gradient(90deg, #91cf60, #1a9850);
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.milestone-tick {
+  position: absolute;
+  top: -2px;
+  transform: translateX(-50%);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.milestone-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4a90d9;
+  border: 2px solid #0d1117;
+  margin: 0 auto;
+}
+
+.milestone-label {
+  display: block;
+  font-size: 9px;
+  color: #6a6a8a;
+  text-align: center;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+/* ===== Dashboard Hero ===== */
+.dash-hero { background:#16213e; border-radius:10px; padding:20px; border:1px solid #2a2a4a; margin-bottom:24px; }
+.dash-hero-text { margin-bottom:14px; }
+.dash-hero-text h3 { margin:0 0 4px; font-size:16px; color:#e0e0e0; }
+.dash-hero-text p { margin:0; font-size:12px; color:var(--text-secondary); }
+
+/* ===== Map Satellite Toggle ===== */
+.map-sat-toggle { position:absolute; top:12px; left:12px; z-index:1000; width:36px; height:36px; border-radius:6px; border:1px solid #c4b89a; background:rgba(255,255,255,.9); color:#666; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; box-shadow:0 2px 4px rgba(0,0,0,.15); }
+.map-sat-toggle:hover { border-color:#4fc3f7; color:#4fc3f7; }
+.map-sat-toggle.active { background:#4fc3f7; color:#fff; border-color:#4fc3f7; }
+
+.map-sat-bg { position:absolute; inset:0; z-index:1; }
+.map-sat-bg .sat-photo-img { width:100%; height:100%; object-fit:cover; border-radius:0; }
+.map-sat-bg .sat-photo-skeleton,
+.map-sat-bg .sat-photo-placeholder { min-height:100%; }
+
+/* Make map semi-transparent when satellite bg is showing */
+.map-area:has(.map-sat-bg) .illustrated-map-container { opacity:.35; z-index:2; }
+
+@media (max-width: 768px) {
+  .slide-panel {
+    width: 100%;
+  }
+
+  .map-area {
+    min-height: 300px;
+  }
+
+  .map-year-slider {
+    left: 10px;
+    right: 10px;
+  }
+}
