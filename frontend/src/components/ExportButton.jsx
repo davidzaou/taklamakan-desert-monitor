@@ -1,9 +1,10 @@
 import { useLanguage } from "../i18n/LanguageContext";
-import { FiDownload } from "react-icons/fi";
+import { FiDownload, FiFileText } from "react-icons/fi";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
+import { exportTimeseriesCSV } from "../utils/exportCSV";
 
-export default function ExportButton({ targetRef }) {
+export default function ExportButton({ targetRef, timeseriesData }) {
   const { t } = useLanguage();
 
   async function handleExportPNG() {
@@ -38,6 +39,11 @@ export default function ExportButton({ targetRef }) {
     pdf.save("taklimakan-analysis.pdf");
   }
 
+  function handleExportCSV() {
+    if (!timeseriesData || !timeseriesData.length) return;
+    exportTimeseriesCSV(timeseriesData);
+  }
+
   return (
     <div className="export-buttons">
       <button className="export-btn" onClick={handleExportPNG}>
@@ -48,6 +54,12 @@ export default function ExportButton({ targetRef }) {
         <FiDownload size={14} />
         {t("exportPDF")}
       </button>
+      {timeseriesData && timeseriesData.length > 0 && (
+        <button className="export-btn" onClick={handleExportCSV}>
+          <FiFileText size={14} />
+          {t("exportCSV")}
+        </button>
+      )}
     </div>
   );
 }

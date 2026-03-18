@@ -484,6 +484,35 @@
   to { transform: rotate(360deg); }
 }
 
+/* ── Export buttons ── */
+.pg-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 6px 12px;
+  border: 1px solid #1e2a3a;
+  background: #0d1117;
+  color: #8a9aaa;
+  border-radius: 6px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pg-export-btn:hover {
+  color: #91cf60;
+  border-color: #91cf60;
+  background: rgba(145, 207, 96, 0.08);
+}
+
+.pg-export-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
 /* ── Empty state ── */
 .pg-empty {
   display: flex;
@@ -625,8 +654,91 @@
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
-  .pg-panel { width: 100%; position: absolute; right: 0; top: 0; bottom: 0; z-index: 1100; }
+  .pg-container {
+    flex-direction: column;
+  }
+
+  .pg-panel {
+    width: 100%;
+    height: 60vh;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    z-index: 1100;
+    border-left: none;
+    border-top: 1px solid #1e2a3a;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .pg-panel::before {
+    content: "";
+    display: block;
+    width: 36px;
+    height: 4px;
+    background: #2a3a4a;
+    border-radius: 2px;
+    margin: 8px auto 4px;
+    flex-shrink: 0;
+  }
+
+  .pg-panel:not(.open) {
+    height: 0;
+  }
+
   .pg-coords { display: none; }
-  .pg-year-bar { left: 16px; right: 16px; top: auto; bottom: 56px; }
-  .pg-zone-bar { left: 16px; top: auto; bottom: 100px; }
+  .pg-source-badge { right: 16px; top: 60px; font-size: 10px; }
+
+  .pg-toolbar {
+    left: 8px;
+    top: 8px;
+  }
+
+  .pg-tool-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .pg-year-bar {
+    left: 8px;
+    right: 8px;
+    top: auto;
+    bottom: 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 10px;
+  }
+
+  .pg-zone-bar {
+    left: 60px;
+    right: 8px;
+    top: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .pg-zone-bar::-webkit-scrollbar { display: none; }
+
+  .pg-zone-btn {
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+
+  .pg-mode-indicator {
+    bottom: 70px;
+    font-size: 11px;
+    padding: 5px 12px;
+  }
+
+  .pg-legend {
+    bottom: 70px;
+    left: 8px;
+    width: 160px;
+  }
+
+  .pg-play-btn {
+    width: 40px;
+    height: 40px;
+  }
 }

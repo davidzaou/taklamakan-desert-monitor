@@ -152,7 +152,7 @@ function App() {
                       <ChangeStats data={changeData} loading={loadingChange} />
                     </>
                   )}
-                  <ExportButton targetRef={panelRef} />
+                  <ExportButton targetRef={panelRef} timeseriesData={timeseriesData} />
                 </div>
               </SlidePanel>
             </div>

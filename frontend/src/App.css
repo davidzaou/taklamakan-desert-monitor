@@ -569,6 +569,32 @@
 
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
+  .app-header {
+    padding: 8px 16px;
+  }
+
+  .header-left h1 {
+    font-size: 16px;
+  }
+
+  .subtitle {
+    display: none;
+  }
+
+  .header-breadcrumb-sep,
+  .header-breadcrumb-page {
+    font-size: 13px;
+  }
+
+  .app-shell {
+    flex-direction: column;
+    padding-bottom: 56px;
+  }
+
+  .status-bar {
+    display: none;
+  }
+
   .dashboard-bar {
     padding: 8px 12px;
     gap: 8px;

@@ -50,6 +50,16 @@ export const translations = {
     // Export
     exportPNG: "Export PNG",
     exportPDF: "Export PDF",
+    exportCSV: "Export CSV",
+    exportReport: "Export Report",
+    // Compare Hero
+    compareMode: "Before/After Compare",
+    exitCompare: "Exit Compare",
+    compareLoading: "Loading satellite data...",
+    compareMeanChange: "Mean NDVI Change",
+    compareImproved: "Improved",
+    compareDegraded: "Degraded",
+    compareNoData: "No data available",
     // Footer
     dataSource: "Data source: Sentinel-2 via Google Earth Engine",
     demoMode: "DEMO MODE",
@@ -245,6 +255,16 @@ export const translations = {
     // Export
     exportPNG: "导出PNG",
     exportPDF: "导出PDF",
+    exportCSV: "导出CSV",
+    exportReport: "导出报告",
+    // Compare Hero
+    compareMode: "前后对比",
+    exitCompare: "退出对比",
+    compareLoading: "加载卫星数据...",
+    compareMeanChange: "NDVI均值变化",
+    compareImproved: "改善区域",
+    compareDegraded: "退化区域",
+    compareNoData: "暂无数据",
     // Footer
     dataSource: "数据来源：Sentinel-2 (Google Earth Engine)",
     demoMode: "演示模式",

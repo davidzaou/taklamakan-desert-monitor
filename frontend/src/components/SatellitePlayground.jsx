@@ -3,7 +3,10 @@ import { MapContainer, TileLayer, Polygon, Marker, Popup, useMap, useMapEvents, 
 import L from "leaflet";
 import { useLanguage } from "../i18n/LanguageContext";
 import { fetchGrid, fetchAnalysis, fetchTimeseries, fetchNdviGridCache } from "../api/client";
-import { FiCrosshair, FiLayers, FiSliders, FiX, FiInfo, FiRefreshCw, FiRadio, FiPlay, FiPause } from "react-icons/fi";
+import { FiCrosshair, FiLayers, FiSliders, FiX, FiInfo, FiRefreshCw, FiRadio, FiPlay, FiPause, FiColumns, FiDownload } from "react-icons/fi";
+import CompareHero from "./CompareHero";
+import { exportTimeseriesCSV, exportGridCSV } from "../utils/exportCSV";
+import { exportReport } from "../utils/exportReport";
 import { DESERT_OUTLINE, GREEN_BELT_SEGMENTS } from "../data/mapShapes";
 import { hasCacheEntry } from "../hooks/useDataCache";
 import "leaflet/dist/leaflet.css";
@@ -254,6 +257,9 @@ export default function SatellitePlayground() {
   // Panel
   const [panelOpen, setPanelOpen] = useState(false);
 
+  // Compare mode
+  const [compareMode, setCompareMode] = useState(false);
+
   // Load cached NDVI grid on mount — skip if already in data cache
   useEffect(() => {
     if (hasCacheEntry("ndvi-grid")) {
@@ -431,6 +437,25 @@ export default function SatellitePlayground() {
     setPlaying(p => !p);
   }
 
+  // If compare mode is active, render CompareHero
+  if (compareMode) {
+    return (
+      <div className="pg-container">
+        <div className="pg-map-wrapper" style={{ position: "relative" }}>
+          <CompareHero onClose={() => setCompareMode(false)} />
+          <button
+            className="pg-tool-btn pg-compare-exit"
+            onClick={() => setCompareMode(false)}
+            title={isZh ? "退出对比" : "Exit compare"}
+            style={{ position: "absolute", top: 10, left: 10, zIndex: 1200, background: "rgba(13,17,23,0.9)", border: "1px solid #1e2a3a" }}
+          >
+            <FiX size={16} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="pg-container">
       {/* ── MAP ── */}
@@ -496,6 +521,10 @@ export default function SatellitePlayground() {
           <div className="pg-tool-divider" />
           <button className={`pg-tool-btn ${tileLayer === "satellite" ? "active" : ""}`} onClick={() => setTileLayer(tileLayer === "satellite" ? "osm" : "satellite")} title={isZh ? "\u5207\u6362\u56FE\u5C42" : "Toggle tiles"}>
             <FiLayers size={16} />
+          </button>
+          <div className="pg-tool-divider" />
+          <button className="pg-tool-btn" onClick={() => setCompareMode(true)} title={isZh ? "\u524D\u540E\u5BF9\u6BD4" : "Before/After Compare"}>
+            <FiColumns size={16} />
           </button>
         </div>
 
@@ -627,6 +656,9 @@ export default function SatellitePlayground() {
                         );
                       })}
                     </div>
+                    <button className="pg-export-btn" onClick={() => exportTimeseriesCSV(clickedData.timeseries)}>
+                      <FiDownload size={12} /> {isZh ? "\u5BFC\u51FACSV" : "Export CSV"}
+                    </button>
                   </div>
                 )}
               </>
@@ -675,6 +707,23 @@ export default function SatellitePlayground() {
                   <div className="pg-meta-row"><span>{isZh ? "\u6570\u636E\u70B9" : "Data points"}</span><span>{regionStats.count}</span></div>
                   <div className="pg-meta-row"><span>{isZh ? "\u8303\u56F4" : "Bounds"}</span><span>{drawnBounds[0].toFixed(1)}\u00B0\u2013{drawnBounds[2].toFixed(1)}\u00B0E</span></div>
                   <div className="pg-meta-row"><span>{isZh ? "\u6765\u6E90" : "Source"}</span><span className={`pg-src-tag ${regionSource === "gee" ? "gee" : ""}`}>{regionSource === "gee" ? "Sentinel-2 (GEE)" : "Demo"}</span></div>
+                </div>
+
+                <div className="pg-export-row">
+                  {regionGrid && (
+                    <button className="pg-export-btn" onClick={() => exportGridCSV(regionGrid)}>
+                      <FiDownload size={12} /> {isZh ? "\u5BFC\u51FACSV" : "Export CSV"}
+                    </button>
+                  )}
+                  <button className="pg-export-btn" onClick={() => exportReport({
+                    region: selectedZone?.label || "Custom Region",
+                    yearA: yearB,
+                    yearB: year,
+                    stats: changeData,
+                    regionStats,
+                  })}>
+                    <FiDownload size={12} /> {isZh ? "\u5BFC\u51FAPDF\u62A5\u544A" : "Export PDF Report"}
+                  </button>
                 </div>
               </>
             ) : null}

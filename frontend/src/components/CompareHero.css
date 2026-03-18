@@ -1,0 +1,219 @@
+/* ===== Compare Hero (Full-screen NDVI comparison) ===== */
+.ch-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #0a0e14;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── Controls ── */
+.ch-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: rgba(13, 17, 23, 0.95);
+  border-bottom: 1px solid #1e2a3a;
+  flex-shrink: 0;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ch-zone-presets {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.ch-zone-presets::-webkit-scrollbar { display: none; }
+
+.ch-zone-btn {
+  padding: 5px 14px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #6a7a8a;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.ch-zone-btn:hover {
+  color: #ccc;
+  border-color: #3a4a5a;
+}
+
+.ch-zone-btn.active {
+  background: #4fc3f7;
+  color: #0b0f15;
+  border-color: #4fc3f7;
+  font-weight: 600;
+}
+
+.ch-year-selectors {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ch-year-selectors select {
+  background: #0d1117;
+  border: 1px solid #2a3a4a;
+  color: #e0e0e0;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+}
+
+.ch-year-selectors select:focus {
+  border-color: #4fc3f7;
+}
+
+.ch-vs {
+  color: #4fc3f7;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+/* ── Slider ── */
+.ch-slider-wrapper {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ch-pane {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.ch-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+/* ── Year labels ── */
+.ch-year-label {
+  position: absolute;
+  top: 20px;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 28px;
+  font-weight: 800;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+  letter-spacing: -0.5px;
+}
+
+.ch-year-label.ch-left {
+  left: 20px;
+}
+
+.ch-year-label.ch-right {
+  right: 20px;
+}
+
+/* ── Stats bar ── */
+.ch-stats-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  padding: 14px 20px;
+  background: rgba(13, 17, 23, 0.85);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(30, 42, 58, 0.5);
+}
+
+.ch-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.ch-stat-val {
+  font-size: 20px;
+  font-weight: 800;
+  font-family: -apple-system, sans-serif;
+}
+
+.ch-stat-lbl {
+  font-size: 11px;
+  color: #6a7a8a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Loading ── */
+.ch-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #4a5a6a;
+  font-size: 14px;
+  flex: 1;
+}
+
+.ch-spin {
+  animation: chSpin 1s linear infinite;
+}
+
+@keyframes chSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .ch-controls {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .ch-zone-btn {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+
+  .ch-year-label {
+    font-size: 20px;
+    padding: 6px 14px;
+    top: 12px;
+  }
+
+  .ch-year-label.ch-left { left: 12px; }
+  .ch-year-label.ch-right { right: 12px; }
+
+  .ch-stats-bar {
+    gap: 16px;
+    padding: 10px 12px;
+  }
+
+  .ch-stat-val {
+    font-size: 16px;
+  }
+
+  .ch-stat-lbl {
+    font-size: 9px;
+  }
+}
