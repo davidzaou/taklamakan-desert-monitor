@@ -11,8 +11,8 @@ import {
 import "leaflet/dist/leaflet.css";
 import { createCategoryIcon } from "./MapMarkerIcons";
 
-const TAKLIMAKAN_CENTER = [39.0, 83.0];
-const TAKLIMAKAN_BOUNDS = [
+const TAKLAMAKAN_CENTER = [39.0, 83.0];
+const TAKLAMAKAN_BOUNDS = [
   [35, 74],
   [44, 91],
 ];
@@ -90,11 +90,11 @@ export default function MapView({ features, onFeatureClick, gridData, selectedFe
 
   return (
     <MapContainer
-      center={TAKLIMAKAN_CENTER}
+      center={TAKLAMAKAN_CENTER}
       zoom={7}
       minZoom={6}
       maxZoom={14}
-      maxBounds={TAKLIMAKAN_BOUNDS}
+      maxBounds={TAKLAMAKAN_BOUNDS}
       maxBoundsViscosity={1.0}
       className="leaflet-map"
       scrollWheelZoom={true}

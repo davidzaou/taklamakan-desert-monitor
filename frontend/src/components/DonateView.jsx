@@ -192,7 +192,7 @@ function ShareButtons({ zh }) {
 
   const tweetText = encodeURIComponent(zh
     ? "我正在支持塔克拉玛干沙漠绿化工程！认领一条巡逻蛇形机器人 🐍🌿"
-    : "I'm supporting the Taklimakan Desert greening mission! Adopt a patrol snake robot 🐍🌿"
+    : "I'm supporting the Taklamakan Desert greening mission! Adopt a patrol snake robot 🐍🌿"
   );
 
   return (
@@ -267,7 +267,7 @@ export default function DonateView() {
           <h1>{zh ? "认领一条沙漠巡逻蛇" : "Adopt a Desert Patrol Snake"}</h1>
           <p>{zh
             ? "捐赠支持塔克拉玛干沙漠绿化工程。认领一条蛇形巡逻机器人，通过它的眼睛实时观察沙漠。"
-            : "Fund the Taklimakan green belt mission. Adopt a patrol snake robot and see the desert through its eyes — live."
+            : "Fund the Taklamakan green belt mission. Adopt a patrol snake robot and see the desert through its eyes — live."
           }</p>
           <div className="donate-hero-stats">
             <div className="dh-stat"><strong>1,247</strong><span>{zh ? "蛇形机器人" : "Patrol Snakes"}</span></div>

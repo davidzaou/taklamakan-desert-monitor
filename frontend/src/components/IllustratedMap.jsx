@@ -642,7 +642,7 @@ export default function IllustratedMap({ features, onFeatureClick, selectedFeatu
       onMouseDown={handleMouseDown} onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
       <svg ref={svgRef} viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" className="illustrated-map"
-        role="img" aria-label="Interactive illustrated map of the Taklimakan Desert showing vegetation, cities, and projects"
+        role="img" aria-label="Interactive illustrated map of the Taklamakan Desert showing vegetation, cities, and projects"
         style={{ transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`, cursor: dragging ? "grabbing" : "grab" }}>
         <defs>
           <filter id="glow"><feGaussianBlur stdDeviation="2.5" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
@@ -688,7 +688,7 @@ export default function IllustratedMap({ features, onFeatureClick, selectedFeatu
         {/* Desert label */}
         <g className="desert-title">
           <text x="600" y="410" className="desert-label-main">
-            {lang === "zh" ? "塔克拉玛干沙漠" : "TAKLIMAKAN DESERT"}
+            {lang === "zh" ? "塔克拉玛干沙漠" : "TAKLAMAKAN DESERT"}
           </text>
           <text x="600" y="432" className="desert-label-sub">
             {lang === "zh" ? "世界第二大流动沙漠" : "World's 2nd Largest Shifting Sand Desert"}

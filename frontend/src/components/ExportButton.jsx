@@ -14,7 +14,7 @@ export default function ExportButton({ targetRef, timeseriesData }) {
       scale: 2,
     });
     const link = document.createElement("a");
-    link.download = "taklimakan-analysis.png";
+    link.download = "taklamakan-analysis.png";
     link.href = canvas.toDataURL("image/png");
     link.click();
   }
@@ -32,11 +32,11 @@ export default function ExportButton({ targetRef, timeseriesData }) {
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
     pdf.setFontSize(16);
-    pdf.text("Taklimakan Desert Monitor - Analysis Report", 10, 15);
+    pdf.text("Taklamakan Desert Monitor - Analysis Report", 10, 15);
     pdf.setFontSize(10);
     pdf.text(`Generated: ${new Date().toLocaleDateString()}`, 10, 22);
     pdf.addImage(imgData, "PNG", 10, 28, imgWidth, imgHeight);
-    pdf.save("taklimakan-analysis.pdf");
+    pdf.save("taklamakan-analysis.pdf");
   }
 
   function handleExportCSV() {

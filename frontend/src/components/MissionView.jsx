@@ -8,7 +8,7 @@ const PILLARS = [
   {
     id: "satellite", navView: "monitor",
     icon: FiRadio, color: "#4fc3f7", bg: "rgba(79,195,247,0.06)", border: "rgba(79,195,247,0.18)",
-    en: { title: "Satellite Monitor", subtitle: "Eyes from Space", desc: "Real-time vegetation tracking using Sentinel-2 satellite imagery and NDVI analysis across the entire Taklimakan region. We measure what's changing, where, and how fast.", scale: "Macro Scale", stat: "337,000 km\u00B2", statLabel: "Desert area monitored" },
+    en: { title: "Satellite Monitor", subtitle: "Eyes from Space", desc: "Real-time vegetation tracking using Sentinel-2 satellite imagery and NDVI analysis across the entire Taklamakan region. We measure what's changing, where, and how fast.", scale: "Macro Scale", stat: "337,000 km\u00B2", statLabel: "Desert area monitored" },
     zh: { title: "\u536B\u661F\u76D1\u6D4B", subtitle: "\u592A\u7A7A\u4E4B\u773C", desc: "\u5229\u7528Sentinel-2\u536B\u661F\u5F71\u50CF\u548CNDVI\u5206\u6790\uFF0C\u5B9E\u65F6\u8DDF\u8E2A\u6574\u4E2A\u5854\u514B\u62C9\u739B\u5E72\u5730\u533A\u7684\u690D\u88AB\u53D8\u5316\u3002", scale: "\u5B8F\u89C2\u5C3A\u5EA6", stat: "337,000 \u5E73\u65B9\u516C\u91CC", statLabel: "\u6C99\u6F20\u76D1\u6D4B\u9762\u79EF" },
   },
   {
@@ -20,7 +20,7 @@ const PILLARS = [
   {
     id: "field", navView: null,
     icon: FiMapPin, color: "#ffa726", bg: "rgba(255,167,38,0.06)", border: "rgba(255,167,38,0.18)",
-    en: { title: "Field Research", subtitle: "Boots on Sand", desc: "On-site validation at the Taklimakan Desert. Testing equipment on real terrain, collecting ground-truth data, and documenting the green belt firsthand. Summer 2026.", scale: "Micro Scale", stat: "2,800+ km", statLabel: "Green belt perimeter" },
+    en: { title: "Field Research", subtitle: "Boots on Sand", desc: "On-site validation at the Taklamakan Desert. Testing equipment on real terrain, collecting ground-truth data, and documenting the green belt firsthand. Summer 2026.", scale: "Micro Scale", stat: "2,800+ km", statLabel: "Green belt perimeter" },
     zh: { title: "\u5B9E\u5730\u7814\u7A76", subtitle: "\u8E0F\u4E0A\u6C99\u6F20", desc: "\u5728\u5854\u514B\u62C9\u739B\u5E72\u6C99\u6F20\u8FDB\u884C\u5B9E\u5730\u9A8C\u8BC1\u3002\u5728\u771F\u5B9E\u5730\u5F62\u4E0A\u6D4B\u8BD5\u8BBE\u5907\uFF0C\u6536\u96C6\u5730\u9762\u6570\u636E\u3002\u8BA1\u52122026\u5E74\u590F\u5B63\u3002", scale: "\u5FAE\u89C2\u5C3A\u5EA6", stat: "2,800+ \u516C\u91CC", statLabel: "\u7EFF\u5E26\u5468\u957F" },
   },
 ];
@@ -95,7 +95,7 @@ export default function MissionView({ onNavigate }) {
             <span className="problem-unit">km&sup2;</span>
             <p>{isZh
               ? "\u5854\u514B\u62C9\u739B\u5E72\u6C99\u6F20\u2014\u2014\u4E16\u754C\u7B2C\u4E8C\u5927\u6D41\u52A8\u6C99\u6F20\uFF0C\u5A01\u80C1\u5468\u8FB9\u57CE\u5E02\u548C\u519C\u7530"
-              : "The Taklimakan \u2014 world's 2nd largest shifting sand desert, threatening cities and farmland"}</p>
+              : "The Taklamakan \u2014 world's 2nd largest shifting sand desert, threatening cities and farmland"}</p>
           </div>
           <div className="mission-problem-card">
             <span className="problem-number">2,800+</span>
@@ -209,7 +209,7 @@ export default function MissionView({ onNavigate }) {
         <p className="mission-section-desc">
           {isZh
             ? "\u6211\u4EEC\u5C06\u524D\u5F80\u5854\u514B\u62C9\u739B\u5E72\u6C99\u6F20\uFF0C\u5728\u4EE5\u4E0B\u7EFF\u5E26\u7AD9\u70B9\u8FDB\u884C\u5B9E\u5730\u6D4B\u8BD5\u548C\u6570\u636E\u6536\u96C6"
-            : "We will travel to the Taklimakan Desert to test equipment and collect data at these green belt sites"}
+            : "We will travel to the Taklamakan Desert to test equipment and collect data at these green belt sites"}
         </p>
         <div className="field-sites-grid">
           {FIELD_SITES.map((site, i) => (

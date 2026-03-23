@@ -72,7 +72,7 @@ export default function SatellitePhoto({ bounds, year, band = "truecolor", width
       {url && !error && (
         <img
           src={url}
-          alt={`Sentinel-2 ${band} image of Taklimakan region (${bounds[0].toFixed(1)}°–${bounds[2].toFixed(1)}°E) from ${year}`}
+          alt={`Sentinel-2 ${band} image of Taklamakan region (${bounds[0].toFixed(1)}°–${bounds[2].toFixed(1)}°E) from ${year}`}
           className={`sat-photo-img ${imgLoaded ? "loaded" : ""}`}
           onLoad={() => setImgLoaded(true)}
           onError={() => setError(true)}

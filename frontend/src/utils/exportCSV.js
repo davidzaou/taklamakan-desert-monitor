@@ -39,17 +39,17 @@ export function exportCSV(data, filename, columns) {
 /**
  * Export timeseries data as CSV
  * @param {Object[]} timeseries - [{year, mean_ndvi}, ...]
- * @param {string} [filename] - Default "taklimakan-timeseries"
+ * @param {string} [filename] - Default "taklamakan-timeseries"
  */
-export function exportTimeseriesCSV(timeseries, filename = "taklimakan-timeseries") {
+export function exportTimeseriesCSV(timeseries, filename = "taklamakan-timeseries") {
   exportCSV(timeseries, filename, ["year", "mean_ndvi"]);
 }
 
 /**
  * Export NDVI grid data as CSV
  * @param {Object[]} grid - [{lat, lng, ndvi}, ...]
- * @param {string} [filename] - Default "taklimakan-ndvi-grid"
+ * @param {string} [filename] - Default "taklamakan-ndvi-grid"
  */
-export function exportGridCSV(grid, filename = "taklimakan-ndvi-grid") {
+export function exportGridCSV(grid, filename = "taklamakan-ndvi-grid") {
   exportCSV(grid, filename, ["lat", "lng", "ndvi"]);
 }

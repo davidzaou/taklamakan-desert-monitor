@@ -24,7 +24,7 @@ const FAQ_ITEMS = [
   {
     q_en: "Is this a real project?",
     q_zh: "这是一个真实的项目吗？",
-    a_en: "This is a student research project focused on monitoring the Taklimakan Desert green belt. The satellite data is real (Sentinel-2 via Google Earth Engine). The snake robot is a working prototype.",
+    a_en: "This is a student research project focused on monitoring the Taklamakan Desert green belt. The satellite data is real (Sentinel-2 via Google Earth Engine). The snake robot is a working prototype.",
     a_zh: "这是一个专注于监测塔克拉玛干沙漠绿化带的学生研究项目。卫星数据来自真实的Sentinel-2数据（通过Google Earth Engine），蛇形机器人是一个可工作的原型。",
   },
   {

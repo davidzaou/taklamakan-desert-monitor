@@ -140,7 +140,7 @@ function SiteMap({ sites, zh }) {
 
       {/* Desert label */}
       <text x={SVG_W / 2} y={SVG_H / 2 + 8} textAnchor="middle" fill="#c9a96e" fontSize="13" fontWeight="700" opacity="0.1" fontFamily="-apple-system, sans-serif" letterSpacing="10">
-        TAKLIMAKAN
+        TAKLAMAKAN
       </text>
 
       {/* Route — smooth curve, animated dash */}
@@ -405,7 +405,7 @@ export default function GroundResearchView({ onNavigate }) {
           <p>
             {zh
               ? "这个夏天，我们将前往塔克拉玛干沙漠，用双脚丈量绿带，用仪器验证卫星数据，在真实沙漠中测试蛇形机器人。"
-              : "This summer we go to the Taklimakan Desert. Walk the green belt, validate satellite data with instruments on the ground, and field-test the snake robot on real sand."}
+              : "This summer we go to the Taklamakan Desert. Walk the green belt, validate satellite data with instruments on the ground, and field-test the snake robot on real sand."}
           </p>
           <div className="gr-hero-stats">
             <div className="gr-hstat"><strong>~80</strong><span>{zh ? "天野外" : "days in field"}</span></div>

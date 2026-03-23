@@ -1,9 +1,9 @@
 /**
- * Geographic shape data for the illustrated Taklimakan Desert map.
+ * Geographic shape data for the illustrated Taklamakan Desert map.
  * All coordinates are [longitude, latitude] and get projected via toSVG().
  */
 
-// Simplified Taklimakan Desert outline (~real shape)
+// Simplified Taklamakan Desert outline (~real shape)
 export const DESERT_OUTLINE = [
   [78.0, 38.8], [78.5, 39.5], [79.0, 40.0], [79.5, 40.4],
   [80.0, 40.7], [80.8, 41.0], [81.5, 41.2], [82.5, 41.3],

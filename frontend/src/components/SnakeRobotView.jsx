@@ -50,7 +50,7 @@ const BOM_CATEGORIES = [
 ];
 
 const IMPACT_STATS = [
-  { valueEn: "500,000+", valueZh: "50万+", labelEn: "hectares of green belt along Taklimakan", labelZh: "塔克拉玛干沙漠绿化带面积（公顷）" },
+  { valueEn: "500,000+", valueZh: "50万+", labelEn: "hectares of green belt along Taklamakan", labelZh: "塔克拉玛干沙漠绿化带面积（公顷）" },
   { valueEn: "~85M", valueZh: "~8500万", labelEn: "saplings planted annually in Xinjiang", labelZh: "新疆每年种植的树苗" },
   { valueEn: "15–30%", valueZh: "15–30%", labelEn: "first-year sapling mortality rate", labelZh: "树苗第一年死亡率" },
   { valueEn: "6×", valueZh: "6×", labelEn: "faster than manual inspection per hectare", labelZh: "比人工巡检每公顷快" },
@@ -247,7 +247,7 @@ export default function SnakeRobotView({ onNavigate }) {
         <p className="snake-section-desc">
           {isZh
             ? "塔克拉玛干沙漠绿化带是人类最大的荒漠化治理工程之一。规模决定了人工巡检不可持续。"
-            : "The Taklimakan green belt is one of humanity's largest desertification-fighting projects. Its scale makes manual inspection unsustainable."}
+            : "The Taklamakan green belt is one of humanity's largest desertification-fighting projects. Its scale makes manual inspection unsustainable."}
         </p>
         <div className="impact-stats-grid">
           {IMPACT_STATS.map((s, i) => (
@@ -816,7 +816,7 @@ export default function SnakeRobotView({ onNavigate }) {
             <p>
               {isZh
                 ? "\u539F\u578B\u673A\u6B63\u5728\u8BBE\u8BA1\u4E2D\u3002\u8BA1\u52122026\u5E74\u590F\u5B63\u5728\u5854\u514B\u62C9\u739B\u5E72\u6C99\u6F20\u8FDB\u884C\u5B9E\u5730\u6D4B\u8BD5\u3002"
-                : "Prototype currently in design. Field testing planned for summer 2026 at the Taklimakan Desert."}
+                : "Prototype currently in design. Field testing planned for summer 2026 at the Taklamakan Desert."}
             </p>
           </div>
         </div>
