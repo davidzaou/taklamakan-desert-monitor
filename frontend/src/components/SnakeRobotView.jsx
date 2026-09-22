@@ -239,6 +239,22 @@ export default function SnakeRobotView({ onNavigate }) {
         )}
       </section>
 
+      {/* ── STATUS BANNER ── */}
+      <div className="snake-status-banner">
+        <FiAlertCircle size={16} />
+        <div>
+          <strong>{isZh ? "状态：重新设计中" : "Status: Redesign in Progress"}</strong>
+          <span>{isZh
+            ? "实地测试揭示了两个关键问题：节段间的过度打滑和底部车轮在松沙上失效。我们正在重新设计运动系统。"
+            : "Field testing revealed two critical failures — segment slipping and wheel failure on soft sand. Locomotion system is being redesigned."}</span>
+        </div>
+        {onNavigate && (
+          <button className="snake-status-pivot-btn" onClick={() => onNavigate("sandpearl")}>
+            {isZh ? "查看继任者：沙珠 →" : "See successor: Sand Pearl →"}
+          </button>
+        )}
+      </div>
+
       {/* ── WHY THIS MATTERS ── */}
       <FadeSection className="snake-section" data-section="impact">
         <h2 className="snake-section-title">
@@ -847,20 +863,6 @@ export default function SnakeRobotView({ onNavigate }) {
         </div>
       </FadeSection>
 
-      {/* ── STATUS ── */}
-      <FadeSection className="snake-section snake-status-section">
-        <div className="snake-status-card">
-          <FiAlertCircle size={18} style={{ color: "#ffa726" }} />
-          <div>
-            <strong>{isZh ? "项目状态：重新设计中" : "Status: Redesign in Progress"}</strong>
-            <p>
-              {isZh
-                ? "实地测试揭示了两个关键问题：节段间的过度打滑和底部车轮在松沙上失效。我们正在重新设计运动系统以解决这些问题。"
-                : "Field testing revealed two critical failures: excessive slipping between segments and the underside wheel not working on soft sand. We are redesigning the locomotion system to address these issues."}
-            </p>
-          </div>
-        </div>
-      </FadeSection>
     </div>
   );
 }
