@@ -179,6 +179,7 @@ export const translations = {
     sat_minfeng: "Minfeng Shelterbelt",
     // Views
     sidebarMain: "MAIN",
+    sidebarRobots: "ROBOTS",
     sidebarMore: "MORE",
     viewMonitor: "Monitor",
     viewHome: "Home",
@@ -417,6 +418,7 @@ export const translations = {
     sat_minfeng: "民丰防护林",
     // Views
     sidebarMain: "主要",
+    sidebarRobots: "机器人",
     sidebarMore: "更多",
     viewMonitor: "监测",
     viewHome: "首页",

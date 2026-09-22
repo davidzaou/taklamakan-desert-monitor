@@ -38,6 +38,11 @@
   user-select: none;
 }
 
+.sidebar-label-robots {
+  color: #4fc3f7;
+  opacity: 0.8;
+}
+
 .sidebar-icon {
   width: 40px;
   height: 40px;

@@ -1,5 +1,6 @@
 import { useLanguage } from "../i18n/LanguageContext";
 import { FiTarget, FiRadio, FiCpu, FiMapPin, FiArrowRight, FiArrowDown, FiGlobe, FiUsers, FiExternalLink, FiCalendar } from "react-icons/fi";
+import SnakeIcon from "./icons/SnakeIcon";
 import FadeSection from "./FadeSection";
 import "./MissionView.css";
 
@@ -12,10 +13,10 @@ const PILLARS = [
     zh: { title: "\u536B\u661F\u76D1\u6D4B", subtitle: "\u592A\u7A7A\u4E4B\u773C", desc: "\u5229\u7528Sentinel-2\u536B\u661F\u5F71\u50CF\u548CNDVI\u5206\u6790\uFF0C\u5B9E\u65F6\u8DDF\u8E2A\u6574\u4E2A\u5854\u514B\u62C9\u739B\u5E72\u5730\u533A\u7684\u690D\u88AB\u53D8\u5316\u3002", scale: "\u5B8F\u89C2\u5C3A\u5EA6", stat: "337,000 \u5E73\u65B9\u516C\u91CC", statLabel: "\u6C99\u6F20\u76D1\u6D4B\u9762\u79EF" },
   },
   {
-    id: "robot", navView: "snake",
+    id: "robot", navView: "sandpearl",
     icon: FiCpu, color: "#66bb6a", bg: "rgba(102,187,106,0.06)", border: "rgba(102,187,106,0.18)",
-    en: { title: "Snake Robot", subtitle: "Ground Patrol", desc: "A bio-inspired snake robot for close-range vegetation inspection. Sidewinding locomotion navigates terrain that defeats wheels and legs, checking tree survival one by one.", scale: "Meso Scale", stat: "$149", statLabel: "Prototype cost" },
-    zh: { title: "\u86C7\u5F62\u673A\u5668\u4EBA", subtitle: "\u5730\u9762\u5DE1\u903B", desc: "\u4EFF\u751F\u86C7\u5F62\u673A\u5668\u4EBA\u539F\u578B\uFF0C\u7528\u4E8E\u8FD1\u8DDD\u79BB\u690D\u88AB\u68C0\u67E5\u3002\u4FA7\u7ED5\u8FD0\u52A8\u80FD\u5728\u8F6E\u5F0F\u548C\u8DB3\u5F0F\u673A\u5668\u4EBA\u65E0\u6CD5\u901A\u884C\u7684\u5730\u5F62\u4E2D\u79FB\u52A8\u3002", scale: "\u4E2D\u89C2\u5C3A\u5EA6", stat: "\u00A5999", statLabel: "\u539F\u578B\u673A\u6210\u672C" },
+    en: { title: "Sand Pearl Robot", subtitle: "Ground Patrol · Active", desc: "A spherical robot with internal gear drive and dual sprinklers — our second-generation ground robot, evolved from field lessons learned with the Snake Robot prototype.", scale: "Meso Scale", stat: "Prototype v1", statLabel: "Active development" },
+    zh: { title: "沙珠机器人", subtitle: "地面巡逻 · 研发中", desc: "球形内驱机器人，搭载双侧喷嘴——从蛇形机器人实地经验中演进而来的第二代地面机器人。", scale: "中观尺度", stat: "原型 v1", statLabel: "积极开发中" },
   },
   {
     id: "field", navView: null,
@@ -73,8 +74,8 @@ export default function MissionView({ onNavigate }) {
             <button className="cta-primary" onClick={() => onNavigate?.("monitor")}>
               {isZh ? "\u67E5\u770B\u76D1\u6D4B" : "Explore Monitor"} <FiArrowRight size={16} />
             </button>
-            <button className="cta-secondary" onClick={() => onNavigate?.("snake")}>
-              {isZh ? "\u4E86\u89E3\u673A\u5668\u4EBA" : "Meet the Robot"} <FiCpu size={14} />
+            <button className="cta-secondary" onClick={() => onNavigate?.("sandpearl")}>
+              {isZh ? "了解机器人" : "Meet the Robots"} <FiCpu size={14} />
             </button>
           </div>
         </div>
@@ -165,6 +166,43 @@ export default function MissionView({ onNavigate }) {
               </div>
             );
           })}
+        </div>
+      </FadeSection>
+
+      {/* ── ROBOT JOURNEY ── */}
+      <FadeSection className="mission-section">
+        <h2 className="mission-section-title">
+          <FiCpu size={18} />
+          {isZh ? "机器人研发历程" : "Robot Development Journey"}
+        </h2>
+        <p className="mission-section-desc">
+          {isZh
+            ? "真正的研发不是一帆风顺的——我们从实地失败中学习，并在此基础上迭代。"
+            : "Real development isn't linear — we learn from field failures and build on them."}
+        </p>
+        <div className="robot-journey">
+          <div className="robot-journey-card robot-journey-archived" onClick={() => onNavigate?.("snake")}>
+            <div className="rj-badge rj-badge-archived">{isZh ? "已归档" : "Archived"}</div>
+            <div className="rj-icon"><SnakeIcon size={28} /></div>
+            <h3>{isZh ? "蛇形机器人" : "Snake Robot"}</h3>
+            <p>{isZh
+              ? "仿生蛇形原型机。实地测试揭示了关键问题：节段间打滑，底轮在软地失效。"
+              : "Bio-inspired snake prototype. Field testing revealed critical issues: segment slipping and wheel failure on soft ground."}</p>
+            <span className="rj-link">{isZh ? "查看详情 →" : "View details →"}</span>
+          </div>
+          <div className="rj-arrow">
+            <FiArrowRight size={22} />
+            <span>{isZh ? "从失败中学习，重新设计" : "Learned & pivoted"}</span>
+          </div>
+          <div className="robot-journey-card robot-journey-active" onClick={() => onNavigate?.("sandpearl")}>
+            <div className="rj-badge rj-badge-active">{isZh ? "当前项目" : "Current"}</div>
+            <div className="rj-icon rj-icon-active">●</div>
+            <h3>{isZh ? "沙珠" : "Sand Pearl"}</h3>
+            <p>{isZh
+              ? "球形内驱机器人，搭载双侧喷嘴。已在社区进行多场景早期测试，正在积极开发中。"
+              : "Spherical internal-gear robot with dual sprinklers. Multi-scenario early testing completed in neighborhood. Actively in development."}</p>
+            <span className="rj-link">{isZh ? "查看详情 →" : "View details →"}</span>
+          </div>
         </div>
       </FadeSection>
 

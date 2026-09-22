@@ -8,13 +8,16 @@ const MAIN_VIEWS = [
   { id: "map", icon: FiMap, labelKey: "viewMap" },
   { id: "monitor", icon: FiActivity, labelKey: "viewMonitor" },
   { id: "projects", icon: FiFolder, labelKey: "viewProjects" },
-  { id: "research", icon: FiCompass, labelKey: "viewResearch" },
-  { id: "playground", icon: FiGlobe, labelKey: "viewPlayground" },
+];
+
+const ROBOT_VIEWS = [
   { id: "snake", icon: SnakeIcon, labelKey: "viewSnake" },
   { id: "sandpearl", icon: FiSun, labelKey: "viewSandPearl" },
 ];
 
 const SECONDARY_VIEWS = [
+  { id: "research", icon: FiCompass, labelKey: "viewResearch" },
+  { id: "playground", icon: FiGlobe, labelKey: "viewPlayground" },
   { id: "donate", icon: FiGift, labelKey: "viewDonate" },
   { id: "timeline", icon: FiClock, labelKey: "viewTimeline" },
   { id: "news", icon: FiFileText, labelKey: "viewNews" },
@@ -46,6 +49,8 @@ export default function Sidebar({ activeView, onViewChange }) {
       </div>
       <span className="sidebar-label">{t("sidebarMain")}</span>
       {MAIN_VIEWS.map(renderButton)}
+      <span className="sidebar-label sidebar-label-robots">{t("sidebarRobots")}</span>
+      {ROBOT_VIEWS.map(renderButton)}
       <span className="sidebar-label">{t("sidebarMore")}</span>
       {SECONDARY_VIEWS.map(renderButton)}
       <div className="sidebar-spacer" />

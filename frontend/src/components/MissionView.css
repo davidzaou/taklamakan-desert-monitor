@@ -542,4 +542,49 @@
   .mission-flow-horizontal { flex-direction: column; align-items: stretch; }
   .flow-h-arrow { display: none; }
   .field-sites-grid { grid-template-columns: 1fr; }
+  .robot-journey { flex-direction: column; }
+  .rj-arrow { flex-direction: row; transform: rotate(90deg); }
 }
+
+/* ── Robot Journey ── */
+.robot-journey {
+  display: flex; align-items: center; gap: 16px; margin-top: 8px;
+}
+
+.robot-journey-card {
+  flex: 1; border-radius: 12px; padding: 24px;
+  cursor: pointer; transition: transform 0.18s, box-shadow 0.18s;
+  display: flex; flex-direction: column; gap: 10px; position: relative;
+}
+.robot-journey-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+
+.robot-journey-archived {
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); opacity: 0.8;
+}
+.robot-journey-active {
+  background: rgba(79,195,247,0.07); border: 1px solid rgba(79,195,247,0.3);
+}
+
+.rj-badge {
+  display: inline-flex; align-self: flex-start;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 20px;
+}
+.rj-badge-archived { color: #8a9aaa; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); }
+.rj-badge-active { color: #4fc3f7; background: rgba(79,195,247,0.1); border: 1px solid rgba(79,195,247,0.25); }
+
+.rj-icon { font-size: 28px; color: #6a7a8a; line-height: 1; }
+.rj-icon-active { color: #4fc3f7; font-size: 22px; }
+
+.robot-journey-card h3 { font-size: 18px; font-weight: 700; color: #e0e0e0; margin: 0; }
+.robot-journey-card p { font-size: 13px; color: #8a9aaa; line-height: 1.65; margin: 0; }
+
+.rj-link { font-size: 12px; font-weight: 600; color: #4a5a6a; margin-top: 4px; transition: color 0.15s; }
+.robot-journey-active .rj-link { color: #4fc3f7; }
+.robot-journey-card:hover .rj-link { opacity: 0.7; }
+
+.rj-arrow {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  flex-shrink: 0; color: #4a5a6a;
+}
+.rj-arrow span { font-size: 10px; color: #4a5a6a; text-align: center; max-width: 70px; line-height: 1.4; }
