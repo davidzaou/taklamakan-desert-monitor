@@ -5,48 +5,12 @@ import FadeSection from "./FadeSection";
 import "./SandPearlView.css";
 
 const VIDEOS = [
-  {
-    src: "/media/sand-pearl/sp-video1.mp4",
-    titleEn: "Concrete Surface Test",
-    titleZh: "硬地测试",
-    descEn: "Sand Pearl navigating smoothly on a flat concrete surface, demonstrating stable rolling locomotion and responsive steering.",
-    descZh: "沙珠在平坦混凝土地面上平稳行进，展示稳定的滚动运动和灵敏的转向控制。",
-  },
-  {
-    src: "/media/sand-pearl/sp-video2.mp4",
-    titleEn: "Steering Control Test",
-    titleZh: "转向控制测试",
-    descEn: "Demonstrating directional control — the internal gear drive allows smooth turning without external steering components.",
-    descZh: "展示方向控制——内部齿轮驱动实现流畅转向，无需外部转向部件。",
-  },
-  {
-    src: "/media/sand-pearl/sp-video3.mp4",
-    titleEn: "Field Trial — Approach",
-    titleZh: "田野测试 — 进入阶段",
-    descEn: "First field trial in a small planted plot. Sand Pearl approaches the test area, showing its ability to transition from hard to soft ground.",
-    descZh: "在小型种植地块中的首次田野测试。沙珠进入测试区域，展示从硬地向软地过渡的能力。",
-  },
-  {
-    src: "/media/sand-pearl/sp-video4.mp4",
-    titleEn: "Field Trial — Soil Navigation",
-    titleZh: "田野测试 — 土壤行进",
-    descEn: "Navigating through the planted field. The robot encounters soil clusters and small mounds — a valuable data point for the next motor iteration.",
-    descZh: "在种植地块中行进。机器人遭遇土块和小土堆——为下一次电机改进提供了宝贵数据。",
-  },
-  {
-    src: "/media/sand-pearl/sp-video5.mp4",
-    titleEn: "Sprinkler Function Test",
-    titleZh: "喷水功能测试",
-    descEn: "Testing the two side-mounted sprinkler nozzles. The irrigation system operates independently from the locomotion drive.",
-    descZh: "测试两侧喷嘴。灌溉系统与驱动系统独立运行。",
-  },
-  {
-    src: "/media/sand-pearl/sp-video6.mp4",
-    titleEn: "Close-up — Internal Mechanism",
-    titleZh: "近距离观察 — 内部机构",
-    descEn: "A close-up view of the sphere in motion, showing how the internal gear system drives the outer shell forward.",
-    descZh: "近距离观察滚动中的球体，展示内部齿轮系统如何驱动外壳前进。",
-  },
+  { src: "/media/sand-pearl/sp-video1.mp4", num: 1 },
+  { src: "/media/sand-pearl/sp-video2.mp4", num: 2 },
+  { src: "/media/sand-pearl/sp-video3.mp4", num: 3 },
+  { src: "/media/sand-pearl/sp-video4.mp4", num: 4 },
+  { src: "/media/sand-pearl/sp-video5.mp4", num: 5 },
+  { src: "/media/sand-pearl/sp-video6.mp4", num: 6 },
 ];
 
 const SPECS = [
@@ -183,7 +147,9 @@ export default function SandPearlView({ onNavigate }) {
       <FadeSection className="sp-section">
         <h2 className="sp-section-title">{isZh ? "测试视频" : "Testing Videos"}</h2>
         <p className="sp-section-desc">
-          {isZh ? "以下视频记录了沙珠在不同环境中的早期测试过程。" : "The following videos document Sand Pearl's early testing across different environments."}
+          {isZh
+            ? "以下视频记录了沙珠在社区附近多种场景下的早期测试过程。"
+            : "The following videos document Sand Pearl's early multi-scenario testing conducted at my neighborhood."}
         </p>
 
         {/* Main player */}
@@ -197,14 +163,6 @@ export default function SandPearlView({ onNavigate }) {
             <source src={VIDEOS[activeVideo].src} type="video/mp4" />
             {isZh ? "您的浏览器不支持视频标签。" : "Your browser does not support the video tag."}
           </video>
-          <div className="sp-video-info">
-            <h3 className="sp-video-title">
-              {isZh ? VIDEOS[activeVideo].titleZh : VIDEOS[activeVideo].titleEn}
-            </h3>
-            <p className="sp-video-desc">
-              {isZh ? VIDEOS[activeVideo].descZh : VIDEOS[activeVideo].descEn}
-            </p>
-          </div>
         </div>
 
         {/* Thumbnail strip */}
@@ -216,7 +174,7 @@ export default function SandPearlView({ onNavigate }) {
               onClick={() => setActiveVideo(i)}
             >
               <video src={v.src + "#t=1"} preload="none" className="sp-thumb-preview" muted />
-              <span className="sp-thumb-label">{isZh ? v.titleZh : v.titleEn}</span>
+              <span className="sp-thumb-label">{isZh ? `片段 ${v.num}` : `Clip ${v.num}`}</span>
             </button>
           ))}
         </div>
