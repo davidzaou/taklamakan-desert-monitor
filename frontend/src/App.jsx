@@ -39,6 +39,7 @@ const DonateView = lazy(() => import("./components/DonateView"));
 const NewsView = lazy(() => import("./components/NewsView"));
 const SatellitePlayground = lazy(() => import("./components/SatellitePlayground"));
 const GroundResearchView = lazy(() => import("./components/GroundResearchView"));
+const SandPearlView = lazy(() => import("./components/SandPearlView"));
 
 function App() {
   const { t } = useLanguage();
@@ -223,6 +224,15 @@ function App() {
             <div className="view-panel active">
               <Suspense fallback={<Spinner />}>
                 <SnakeRobotView onNavigate={setActiveView} wsMessage={wsMessage} />
+              </Suspense>
+            </div>
+          )}
+
+          {/* ===== SAND PEARL ===== */}
+          {activeView === "sandpearl" && (
+            <div className="view-panel active">
+              <Suspense fallback={<Spinner />}>
+                <SandPearlView onNavigate={setActiveView} />
               </Suspense>
             </div>
           )}

@@ -11,6 +11,7 @@ const MAIN_VIEWS = [
   { id: "research", icon: FiCompass, labelKey: "viewResearch" },
   { id: "playground", icon: FiGlobe, labelKey: "viewPlayground" },
   { id: "snake", icon: SnakeIcon, labelKey: "viewSnake" },
+  { id: "sandpearl", icon: FiSun, labelKey: "viewSandPearl" },
 ];
 
 const SECONDARY_VIEWS = [
