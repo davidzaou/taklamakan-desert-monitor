@@ -30,6 +30,17 @@ const OUR_INITIATIVES = [
     archived: true,
   },
   {
+    id: "initiative_expedition",
+    titleKey: "proj_expedition",
+    descKey: "proj_expeditionDesc",
+    icon: "🏜️",
+    color: "#e17055",
+    statusKey: "proj_statusExpeditionDone",
+    nextKey: "proj_expeditionNext",
+    pillar: "2 · Field Test",
+    navView: "snake",
+  },
+  {
     id: "initiative_sandpearl",
     titleKey: "proj_sandpearl",
     descKey: "proj_sandpearlDesc",
