@@ -683,6 +683,40 @@
   .design-gallery { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* ── Field Test Gallery ── */
+.field-test-gallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 20px;
+}
+
+.field-test-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.field-test-img {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  object-fit: cover;
+  aspect-ratio: 4/3;
+}
+
+.field-test-caption {
+  font-size: 13px;
+  color: #8a9aaa;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0 4px;
+}
+
+@media (max-width: 600px) {
+  .field-test-gallery { grid-template-columns: 1fr; }
+}
+
 /* ── Print / PDF ── */
 @media print {
   .snake-page { overflow: visible !important; background: #fff !important; }

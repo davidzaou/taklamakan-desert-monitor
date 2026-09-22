@@ -807,16 +807,56 @@ export default function SnakeRobotView({ onNavigate }) {
         </div>
       </FadeSection>
 
+      {/* ── FIELD TESTING PHOTOS ── */}
+      <FadeSection className="snake-section">
+        <h2 className="snake-section-title">
+          {isZh ? "实地测试" : "Field Testing"}
+        </h2>
+        <p className="snake-section-desc">
+          {isZh
+            ? "我们在真实植被环境中对蛇形机器人进行了实地测试。目前，机器人存在两个关键问题，导致其无法正常运行：各节段之间的滑动摩擦过大，以及机器人底部的驱动轮在松散沙地上无法提供足够的抓地力。这些发现正在推动我们对运动系统的重新设计。"
+            : "We conducted field tests of the snakebot in real vegetation terrain. Currently, the robot does not function as intended due to two critical issues: excessive slipping between the body segments, and the wheel underneath the snakebot failing to grip soft sand. These findings are driving a redesign of the locomotion system."}
+        </p>
+        <div className="field-test-gallery">
+          <div className="field-test-item">
+            <img
+              src="/media/snakebot-photo1.jpg"
+              alt={isZh ? "蛇形机器人实地测试 — 植被环境中" : "Snakebot field test — testing in vegetation terrain"}
+              className="field-test-img"
+              loading="lazy"
+            />
+            <p className="field-test-caption">
+              {isZh
+                ? "在沙漠边缘植被带进行测试。机器人在松软地面上前进困难，节段间打滑明显。"
+                : "Testing in the desert-edge vegetation zone. The robot struggled to advance on soft ground, with visible slipping between segments."}
+            </p>
+          </div>
+          <div className="field-test-item">
+            <img
+              src="/media/snakebot-photo2.jpg"
+              alt={isZh ? "蛇形机器人实地测试 — 检查底部车轮" : "Snakebot field test — inspecting the underside wheel"}
+              className="field-test-img"
+              loading="lazy"
+            />
+            <p className="field-test-caption">
+              {isZh
+                ? "检查底部驱动轮。轮子在松散沙地和植被根系间无法获得足够摩擦力，是导致机器人失效的主要原因之一。"
+                : "Inspecting the underside drive wheel. The wheel could not generate sufficient traction in loose sand and among vegetation roots — one of the main causes of failure."}
+            </p>
+          </div>
+        </div>
+      </FadeSection>
+
       {/* ── STATUS ── */}
       <FadeSection className="snake-section snake-status-section">
         <div className="snake-status-card">
           <FiAlertCircle size={18} style={{ color: "#ffa726" }} />
           <div>
-            <strong>{isZh ? "\u9879\u76EE\u72B6\u6001\uFF1A\u8BBE\u8BA1\u9636\u6BB5" : "Status: Design Phase"}</strong>
+            <strong>{isZh ? "项目状态：重新设计中" : "Status: Redesign in Progress"}</strong>
             <p>
               {isZh
-                ? "\u539F\u578B\u673A\u6B63\u5728\u8BBE\u8BA1\u4E2D\u3002\u8BA1\u52122026\u5E74\u590F\u5B63\u5728\u5854\u514B\u62C9\u739B\u5E72\u6C99\u6F20\u8FDB\u884C\u5B9E\u5730\u6D4B\u8BD5\u3002"
-                : "Prototype currently in design. Field testing planned for summer 2026 at the Taklamakan Desert."}
+                ? "实地测试揭示了两个关键问题：节段间的过度打滑和底部车轮在松沙上失效。我们正在重新设计运动系统以解决这些问题。"
+                : "Field testing revealed two critical failures: excessive slipping between segments and the underside wheel not working on soft sand. We are redesigning the locomotion system to address these issues."}
             </p>
           </div>
         </div>
