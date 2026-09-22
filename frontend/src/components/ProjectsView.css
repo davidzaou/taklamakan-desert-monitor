@@ -124,6 +124,37 @@
 .pv2-initiative-card:nth-child(1) { animation-delay: 0s; }
 .pv2-initiative-card:nth-child(2) { animation-delay: 0.08s; }
 .pv2-initiative-card:nth-child(3) { animation-delay: 0.16s; }
+.pv2-initiative-card:nth-child(4) { animation-delay: 0.24s; }
+
+.pv2-init-clickable { cursor: pointer; }
+
+.pv2-init-archived {
+  opacity: 0.65;
+  filter: grayscale(0.4);
+}
+.pv2-init-archived:hover { opacity: 0.85; filter: none; }
+
+.pv2-init-archived-badge {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #8a9aaa;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.pv2-init-viewlink {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #4a5a6a;
+  margin-top: 10px;
+  transition: color 0.15s;
+}
+.pv2-init-clickable:hover .pv2-init-viewlink { color: #4fc3f7; }
 
 .pv2-initiative-card:hover {
   transform: translateY(-3px);

@@ -15,26 +15,41 @@ const OUR_INITIATIVES = [
     statusKey: "proj_statusLive",
     nextKey: "proj_satelliteNext",
     pillar: 1,
+    navView: null,
   },
   {
     id: "initiative_snake",
     titleKey: "proj_snake",
     descKey: "proj_snakeDesc",
     icon: "\u{1F40D}",
-    color: "#fd79a8",
-    statusKey: "proj_statusDesign",
+    color: "#8a9aaa",
+    statusKey: "proj_statusArchived",
     nextKey: "proj_snakeNext",
     pillar: 2,
+    navView: "snake",
+    archived: true,
+  },
+  {
+    id: "initiative_sandpearl",
+    titleKey: "proj_sandpearl",
+    descKey: "proj_sandpearlDesc",
+    icon: "⚽",
+    color: "#4fc3f7",
+    statusKey: "proj_statusPrototype",
+    nextKey: "proj_sandpearlNext",
+    pillar: "2 · Gen 2",
+    navView: "sandpearl",
   },
   {
     id: "initiative_field",
     titleKey: "proj_field",
     descKey: "proj_fieldDesc",
     icon: "\u{1F3D5}\uFE0F",
-    color: "#e17055",
-    statusKey: "proj_statusPlanning",
+    color: "#ffa726",
+    statusKey: "proj_statusFieldDone",
     nextKey: "proj_fieldNext",
     pillar: 3,
+    navView: null,
   },
 ];
 
@@ -124,7 +139,7 @@ function ProjectCard({ feature, expanded, onToggle, lang }) {
   );
 }
 
-export default function ProjectsView({ features, onSelectFeature }) {
+export default function ProjectsView({ features, onSelectFeature, onNavigate }) {
   const { lang, t } = useLanguage();
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("all");
@@ -196,10 +211,16 @@ export default function ProjectsView({ features, onSelectFeature }) {
           <h3 className="pv2-section-title">{t("proj_ourInitiatives")}</h3>
           <div className="pv2-initiative-grid">
             {OUR_INITIATIVES.map((init) => (
-              <div key={init.id} className="pv2-initiative-card" style={{ borderTopColor: init.color }}>
+              <div
+                key={init.id}
+                className={`pv2-initiative-card ${init.archived ? "pv2-init-archived" : ""} ${init.navView ? "pv2-init-clickable" : ""}`}
+                style={{ borderTopColor: init.color }}
+                onClick={() => init.navView && onNavigate?.(init.navView)}
+              >
                 <div className="pv2-init-header">
                   <span className="pv2-init-icon">{init.icon}</span>
                   <span className="pv2-init-pillar">Pillar {init.pillar}</span>
+                  {init.archived && <span className="pv2-init-archived-badge">{lang === "zh" ? "已归档" : "Archived"}</span>}
                 </div>
                 <h4 className="pv2-init-title">{t(init.titleKey)}</h4>
                 <p className="pv2-init-desc">{t(init.descKey)}</p>
@@ -207,6 +228,7 @@ export default function ProjectsView({ features, onSelectFeature }) {
                   <span className="pv2-init-status" style={{ color: init.color }}>{t(init.statusKey)}</span>
                   <span className="pv2-init-next">{t(init.nextKey)}</span>
                 </div>
+                {init.navView && <span className="pv2-init-viewlink">{lang === "zh" ? "查看详情 →" : "View details →"}</span>}
               </div>
             ))}
           </div>

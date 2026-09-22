@@ -196,7 +196,7 @@ function App() {
           {activeView === "projects" && (
             <div className="view-panel active">
               <Suspense fallback={<Spinner />}>
-                <ProjectsView features={features} onSelectFeature={handleSelectFeatureAndGoToMap} />
+                <ProjectsView features={features} onSelectFeature={handleSelectFeatureAndGoToMap} onNavigate={setActiveView} />
               </Suspense>
             </div>
           )}
