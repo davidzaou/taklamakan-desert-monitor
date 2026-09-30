@@ -12,7 +12,8 @@ import useDataCache from "../hooks/useDataCache";
 import { fetchDataSource } from "../api/client";
 import "./MonitorView.css";
 
-const API = import.meta.env.DEV ? "http://localhost:8001/api" : "/api";
+const _origin = import.meta.env.VITE_API_URL || "";
+const API = import.meta.env.DEV ? "http://localhost:8001/api" : `${_origin}/api`;
 
 const ZONES = [
   { id: "hotan",   label: "Hotan",       bounds: [79.5, 36.8, 80.5, 37.5] },

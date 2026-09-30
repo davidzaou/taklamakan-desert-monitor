@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import "./SatellitePhoto.css";
 
-const API = import.meta.env.DEV ? "http://localhost:8001/api" : "/api";
+const _origin = import.meta.env.VITE_API_URL || "";
+const API = import.meta.env.DEV ? "http://localhost:8001/api" : `${_origin}/api`;
 
 // In-memory cache: "bounds|year|band" → url
 const _cache = {};

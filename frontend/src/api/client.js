@@ -1,5 +1,6 @@
-const API_BASE = import.meta.env.DEV ? "http://localhost:8001/api" : "/api";
-const API_V1 = import.meta.env.DEV ? "http://localhost:8001/api/v1" : "/api/v1";
+const _origin = import.meta.env.VITE_API_URL || "";
+const API_BASE = import.meta.env.DEV ? "http://localhost:8001/api" : `${_origin}/api`;
+const API_V1  = import.meta.env.DEV ? "http://localhost:8001/api/v1" : `${_origin}/api/v1`;
 
 class ApiError extends Error {
   constructor(message, status, data) {
