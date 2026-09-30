@@ -1,12 +1,9 @@
 """
 Microsoft Planetary Computer — Sentinel-2 satellite service.
 
-All raster rendering is done server-side by PC's titiler (no GDAL/rasterio needed).
-Only requires: pystac-client, planetary-computer, httpx (already in requirements).
-
-API used:
-  STAC search: https://planetarycomputer.microsoft.com/api/stac/v1
-  Titiler:     https://planetarycomputer.microsoft.com/api/data/v1
+Uses only httpx (already in requirements) — no pystac-client or rasterio needed.
+- STAC search via direct HTTP POST to the PC STAC API
+- Image rendering via PC's hosted titiler (handles signing internally)
 """
 
 import base64
@@ -18,11 +15,11 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-STAC_URL = "https://planetarycomputer.microsoft.com/api/stac/v1"
-TITILER  = "https://planetarycomputer.microsoft.com/api/data/v1"
-COLLECTION = "sentinel-2-l2a"
+STAC_SEARCH = "https://planetarycomputer.microsoft.com/api/stac/v1/search"
+TITILER     = "https://planetarycomputer.microsoft.com/api/data/v1"
+COLLECTION  = "sentinel-2-l2a"
 
-# Simple in-memory cache: key → value
+# Simple in-memory cache to avoid redundant network calls
 _cache: dict = {}
 
 
@@ -30,51 +27,61 @@ def _cache_key(*args) -> str:
     return "|".join(str(a) for a in args)
 
 
-def _find_item(bounds: list, year: int, max_cloud: int = 30) -> Optional[object]:
-    """Find the least-cloudy Sentinel-2 item for bounds during growing season."""
-    key = _cache_key("item", bounds, year, max_cloud)
+def _find_item(bounds: list, year: int, max_cloud: int = 50) -> Optional[dict]:
+    """Search PC STAC API for the least-cloudy Sentinel-2 item during growing season."""
+    key = _cache_key("item", tuple(bounds), year)
     if key in _cache:
         return _cache[key]
 
     try:
-        import pystac_client
-        import planetary_computer
-
-        client = pystac_client.Client.open(
-            STAC_URL,
-            modifier=planetary_computer.sign_inplace,
+        resp = httpx.post(
+            STAC_SEARCH,
+            json={
+                "collections": [COLLECTION],
+                "bbox": bounds,
+                "datetime": f"{year}-04-01T00:00:00Z/{year}-10-31T23:59:59Z",
+                "query": {"eo:cloud_cover": {"lt": max_cloud}},
+                "limit": 10,
+                "sortby": [{"field": "eo:cloud_cover", "direction": "asc"}],
+            },
+            timeout=30,
         )
-        search = client.search(
-            collections=[COLLECTION],
-            bbox=bounds,
-            datetime=f"{year}-04-01T00:00:00Z/{year}-10-31T23:59:59Z",
-            query={"eo:cloud_cover": {"lt": max_cloud}},
-            max_items=20,
-            sortby=["+eo:cloud_cover"],
-        )
-        items = list(search.items())
-        item = items[0] if items else None
-        _cache[key] = item
-        return item
+        if resp.status_code == 200:
+            features = resp.json().get("features", [])
+            if features:
+                item = features[0]
+                logger.info(
+                    "Found Sentinel-2 item %s (cloud=%.1f%%) for year=%d",
+                    item["id"],
+                    item.get("properties", {}).get("eo:cloud_cover", 0),
+                    year,
+                )
+                _cache[key] = item
+                return item
+            logger.warning("No Sentinel-2 items found for bounds=%s year=%d cloud<%d%%", bounds, year, max_cloud)
+        else:
+            logger.error("STAC search HTTP %d: %s", resp.status_code, resp.text[:200])
     except Exception as e:
         logger.error("STAC search error: %s", e)
-        return None
+
+    _cache[key] = None
+    return None
 
 
 def get_image_url(bounds: list, year: int, band: str = "truecolor", width: int = 600) -> Optional[str]:
     """
-    Return a base64-encoded PNG data URL for the given bounds/year/band.
-    All rendering is handled by PC's titiler — no local raster processing.
+    Return a base64-encoded PNG data URL.
+    PC's titiler handles all COG fetching and signing internally.
     """
-    key = _cache_key("img", bounds, year, band, width)
+    key = _cache_key("img", tuple(bounds), year, band, width)
     if key in _cache:
         return _cache[key]
 
     item = _find_item(bounds, year)
     if not item:
-        logger.warning("No Sentinel-2 item found for bounds=%s year=%d", bounds, year)
         return None
 
+    item_id = item["id"]
     minx, miny, maxx, maxy = bounds
     height = max(1, int(width * (maxy - miny) / (maxx - minx)))
     crop_url = f"{TITILER}/item/crop/{minx},{miny},{maxx},{maxy}.png"
@@ -82,7 +89,7 @@ def get_image_url(bounds: list, year: int, band: str = "truecolor", width: int =
     if band == "ndvi":
         params = [
             ("collection", COLLECTION),
-            ("item", item.id),
+            ("item", item_id),
             ("expression", "(B08-B04)/(B08+B04)"),
             ("rescale", "-0.1,0.8"),
             ("colormap_name", "rdylgn"),
@@ -92,7 +99,7 @@ def get_image_url(bounds: list, year: int, band: str = "truecolor", width: int =
     elif band == "falsecolor":
         params = [
             ("collection", COLLECTION),
-            ("item", item.id),
+            ("item", item_id),
             ("assets", "B08"),
             ("assets", "B04"),
             ("assets", "B03"),
@@ -105,7 +112,7 @@ def get_image_url(bounds: list, year: int, band: str = "truecolor", width: int =
     else:  # truecolor
         params = [
             ("collection", COLLECTION),
-            ("item", item.id),
+            ("item", item_id),
             ("assets", "B04"),
             ("assets", "B03"),
             ("assets", "B02"),
@@ -117,25 +124,25 @@ def get_image_url(bounds: list, year: int, band: str = "truecolor", width: int =
         ]
 
     try:
+        logger.info("Requesting titiler crop: item=%s band=%s", item_id, band)
         resp = httpx.get(crop_url, params=params, timeout=60)
-        if resp.status_code == 200 and "image" in resp.headers.get("content-type", ""):
+        ct = resp.headers.get("content-type", "")
+        if resp.status_code == 200 and "image" in ct:
             b64 = base64.b64encode(resp.content).decode()
             url = f"data:image/png;base64,{b64}"
             _cache[key] = url
+            logger.info("Titiler image OK: %d bytes, band=%s", len(resp.content), band)
             return url
-        logger.warning("PC titiler crop returned HTTP %d: %s", resp.status_code, resp.text[:300])
+        logger.warning("Titiler crop HTTP %d (ct=%s): %s", resp.status_code, ct, resp.text[:300])
     except Exception as e:
-        logger.error("PC image fetch error: %s", e)
+        logger.error("Titiler image error: %s", e)
 
     return None
 
 
 def get_stats(bounds: list, year: int) -> dict:
-    """
-    Compute NDVI statistics via PC titiler statistics endpoint.
-    Falls back to demo data if unavailable.
-    """
-    key = _cache_key("stats", bounds, year)
+    """Fetch NDVI statistics from the PC titiler statistics endpoint."""
+    key = _cache_key("stats", tuple(bounds), year)
     if key in _cache:
         return _cache[key]
 
@@ -143,11 +150,12 @@ def get_stats(bounds: list, year: int) -> dict:
     if not item:
         return _demo_stats()
 
+    item_id = item["id"]
     minx, miny, maxx, maxy = bounds
     stats_url = f"{TITILER}/item/statistics"
     params = [
         ("collection", COLLECTION),
-        ("item", item.id),
+        ("item", item_id),
         ("assets", "B04"),
         ("assets", "B08"),
         ("coord_crs", "EPSG:4326"),
@@ -159,64 +167,57 @@ def get_stats(bounds: list, year: int) -> dict:
         resp = httpx.get(stats_url, params=params, timeout=60)
         if resp.status_code == 200:
             data = resp.json()
-            b4 = (data.get("B04") or data.get("properties", {}).get("B04") or {})
-            b8 = (data.get("B08") or data.get("properties", {}).get("B08") or {})
-            # Handle nested statistics key
+            b4 = data.get("B04") or {}
+            b8 = data.get("B08") or {}
             if "statistics" in b4:
                 b4 = b4["statistics"]
             if "statistics" in b8:
                 b8 = b8["statistics"]
 
-            r_mean  = float(b4.get("mean") or 0)
+            r_mean   = float(b4.get("mean") or 0)
             nir_mean = float(b8.get("mean") or 0)
             denom = nir_mean + r_mean
             ndvi_mean = (nir_mean - r_mean) / denom if denom else 0.0
 
-            r_pct98  = float(b4.get("percentile_98") or r_mean * 2)
-            nir_pct98 = float(b8.get("percentile_98") or nir_mean * 2)
-            ndvi_max  = (nir_pct98 - r_pct98) / (nir_pct98 + r_pct98 + 1e-6)
+            r98  = float(b4.get("percentile_98") or r_mean * 1.5)
+            n98  = float(b8.get("percentile_98") or nir_mean * 1.5)
+            ndvi_max = (n98 - r98) / (n98 + r98 + 1e-6)
 
-            r_pct2   = float(b4.get("percentile_2")  or 0)
-            nir_pct2  = float(b8.get("percentile_2")  or 0)
-            ndvi_min  = (nir_pct2 - r_pct2) / (nir_pct2 + r_pct2 + 1e-6)
+            r2   = float(b4.get("percentile_2") or 0)
+            n2   = float(b8.get("percentile_2") or 0)
+            ndvi_min = (n2 - r2) / (n2 + r2 + 1e-6)
 
-            veg_pct  = min(max(ndvi_mean * 120, 5), 45)
-            bare_pct = min(max(100 - veg_pct * 4, 40), 85)
+            veg_pct  = min(max(ndvi_mean * 120, 3), 40)
+            bare_pct = min(max(100 - veg_pct * 4, 40), 90)
 
             result = {
                 "mean":    round(ndvi_mean, 4),
-                "max":     round(ndvi_max, 4),
-                "min":     round(ndvi_min, 4),
-                "vegPct":  round(veg_pct, 1),
-                "barePct": round(bare_pct, 1),
+                "max":     round(ndvi_max,  4),
+                "min":     round(ndvi_min,  4),
+                "vegPct":  round(veg_pct,   1),
+                "barePct": round(bare_pct,  1),
                 "source":  "pc",
             }
             _cache[key] = result
             return result
-
-        logger.warning("PC stats returned HTTP %d: %s", resp.status_code, resp.text[:200])
+        logger.warning("Stats HTTP %d: %s", resp.status_code, resp.text[:200])
     except Exception as e:
-        logger.error("PC stats error: %s", e)
+        logger.error("Stats error: %s", e)
 
     return _demo_stats()
 
 
 def get_change(bounds: list, year1: int, year2: int) -> dict:
-    """Compare NDVI between two years using per-year stats."""
-    stats1 = get_stats(bounds, year1)
-    stats2 = get_stats(bounds, year2)
+    """Compare NDVI between two years."""
+    s1 = get_stats(bounds, year1)
+    s2 = get_stats(bounds, year2)
 
-    if stats1.get("source") == "demo" or stats2.get("source") == "demo":
+    if s1.get("source") == "demo" or s2.get("source") == "demo":
         return _demo_change(year1, year2)
 
-    mean1 = stats1.get("mean", 0.1)
-    mean2 = stats2.get("mean", 0.1)
-    mean_change = round(mean2 - mean1, 4)
-
-    veg1 = stats1.get("vegPct", 10)
-    veg2 = stats2.get("vegPct", 10)
-    gained = max(0.0, round(veg2 - veg1, 1))
-    lost   = max(0.0, round(veg1 - veg2, 1))
+    mean_change = round(s2["mean"] - s1["mean"], 4)
+    gained = max(0.0, round(s2["vegPct"] - s1["vegPct"], 1))
+    lost   = max(0.0, round(s1["vegPct"] - s2["vegPct"], 1))
     stable = round(max(0.0, 100 - gained - lost), 1)
 
     return {
@@ -232,11 +233,11 @@ def get_change(bounds: list, year1: int, year2: int) -> dict:
 
 def _demo_stats() -> dict:
     return {
-        "mean":    round(random.uniform(0.06, 0.22), 4),
-        "max":     round(random.uniform(0.35, 0.60), 4),
+        "mean":    round(random.uniform(0.06, 0.18), 4),
+        "max":     round(random.uniform(0.30, 0.55), 4),
         "min":     round(random.uniform(-0.05, 0.03), 4),
-        "vegPct":  round(random.uniform(8, 20), 1),
-        "barePct": round(random.uniform(58, 72), 1),
+        "vegPct":  round(random.uniform(6, 18), 1),
+        "barePct": round(random.uniform(60, 75), 1),
         "source":  "demo",
     }
 
