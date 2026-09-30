@@ -47,6 +47,7 @@ from routers.auth import router as auth_router
 from routers.alerts import router as alerts_router
 from routers.donations import router as donations_router
 from routers.ws import router as ws_router
+from routers.satellite import router as satellite_router
 from websocket import heartbeat_loop
 
 logger = structlog.get_logger()
@@ -112,6 +113,7 @@ app.include_router(auth_router)
 app.include_router(alerts_router)
 app.include_router(donations_router)
 app.include_router(ws_router)
+app.include_router(satellite_router)
 
 # Serve built frontend in production
 STATIC_DIR = Path(__file__).parent / "static"
