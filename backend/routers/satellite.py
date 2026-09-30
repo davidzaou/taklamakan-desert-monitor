@@ -97,6 +97,33 @@ def _svc():
         return None
 
 
+@router.get("/debug")
+async def satellite_debug(request: Request):
+    """Test PC STAC connectivity — remove after debugging."""
+    import httpx
+    test_bounds = [79.5, 36.8, 80.5, 37.5]
+    try:
+        resp = httpx.post(
+            "https://planetarycomputer.microsoft.com/api/stac/v1/search",
+            json={
+                "collections": ["sentinel-2-l2a"],
+                "bbox": test_bounds,
+                "datetime": "2024-04-01T00:00:00Z/2024-10-31T23:59:59Z",
+                "query": {"eo:cloud_cover": {"lt": 50}},
+                "limit": 3,
+            },
+            timeout=20,
+        )
+        return {
+            "stac_status": resp.status_code,
+            "item_count": len(resp.json().get("features", [])) if resp.status_code == 200 else 0,
+            "first_item": resp.json().get("features", [{}])[0].get("id") if resp.status_code == 200 and resp.json().get("features") else None,
+            "error": resp.text[:200] if resp.status_code != 200 else None,
+        }
+    except Exception as e:
+        return {"stac_status": "exception", "error": str(e), "type": type(e).__name__}
+
+
 @router.post("/image")
 @limiter.limit("20/minute")
 async def satellite_image(request: Request, body: ImageRequest):
