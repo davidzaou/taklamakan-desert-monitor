@@ -120,6 +120,44 @@ async def satellite_debug(request: Request):  # noqa: C901
         return {"gibs_status": "exception", "error": str(e)}
 
 
+@router.get("/debug-image")
+async def satellite_debug_image(request: Request):
+    """Debug: call get_image_url directly and report result."""
+    import traceback
+    bounds = [79.5, 36.8, 80.5, 37.5]
+    year = 2024
+    band = "truecolor"
+    width = 256
+
+    # 1. Check if svc imports correctly
+    svc_err = None
+    svc = None
+    try:
+        from services import pc_service as _pc
+        svc = _pc
+    except Exception as e:
+        svc_err = traceback.format_exc()
+
+    if svc_err:
+        return {"step": "import_failed", "error": svc_err}
+
+    # 2. Call get_image_url directly (not in thread) to surface errors
+    url_err = None
+    url = None
+    try:
+        url = svc.get_image_url(bounds, year, band, width)
+    except Exception as e:
+        url_err = traceback.format_exc()
+
+    return {
+        "step": "get_image_url",
+        "url_is_none": url is None,
+        "url_len": len(url) if url else 0,
+        "url_prefix": url[:60] if url else None,
+        "error": url_err,
+    }
+
+
 @router.post("/image")
 @limiter.limit("20/minute")
 async def satellite_image(request: Request, body: ImageRequest):
