@@ -128,18 +128,35 @@ async def satellite_debug(request: Request):
         result["titiler"] = "skipped — no items found"
         return result
 
-    # Step 2: titiler crop
+    # Step 2: Register mosaic search for this specific item
+    TITILER = "https://planetarycomputer.microsoft.com/api/data/v1"
     minx, miny, maxx, maxy = test_bounds
-    crop_url = f"https://planetarycomputer.microsoft.com/api/data/v1/item/crop/{minx},{miny},{maxx},{maxy}.png"
-    params = [
-        ("collection", "sentinel-2-l2a"),
-        ("item", item_id),
-        ("assets", "B04"), ("assets", "B03"), ("assets", "B02"),
-        ("rescale", "0,2000"), ("rescale", "0,2000"), ("rescale", "0,2000"),
-        ("width", "256"), ("height", "150"),
-    ]
     try:
-        t = httpx.get(crop_url, params=params, timeout=60)
+        reg = httpx.post(
+            f"{TITILER}/mosaic/register",
+            json={
+                "collections": ["sentinel-2-l2a"],
+                "filter": {"op": "=", "args": [{"property": "id"}, item_id]},
+                "filter-lang": "cql2-json",
+            },
+            timeout=20,
+        )
+        result["register"] = {"status": reg.status_code, "body": reg.json() if reg.status_code < 300 else reg.text[:200]}
+        if reg.status_code != 200:
+            return result
+        search_id = reg.json().get("searchid") or reg.json().get("id")
+    except Exception as e:
+        result["register"] = {"status": "exception", "error": str(e)}
+        return result
+
+    # Step 3: Request bbox image from mosaic
+    try:
+        bbox_url = f"{TITILER}/mosaic/{search_id}/bbox/{minx},{miny},{maxx},{maxy}.png"
+        t = httpx.get(bbox_url, params=[
+            ("assets", "B04"), ("assets", "B03"), ("assets", "B02"),
+            ("rescale", "0,2000"), ("rescale", "0,2000"), ("rescale", "0,2000"),
+            ("width", "256"), ("height", "150"),
+        ], timeout=60)
         result["titiler"] = {
             "status": t.status_code,
             "content_type": t.headers.get("content-type"),
