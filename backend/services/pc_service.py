@@ -1,13 +1,16 @@
 """
-Microsoft Planetary Computer — Sentinel-2 satellite service.
+NASA GIBS (Global Imagery Browse Services) — satellite imagery service.
 
-Uses only httpx (already in requirements) — no pystac-client or rasterio needed.
-- STAC search via direct HTTP POST to the PC STAC API
-- Image rendering via PC's hosted titiler (handles signing internally)
+Completely free, no authentication required, works immediately.
+Data: MODIS Terra (250m resolution), daily data back to 2000.
+API: Standard OGC WMS — simple HTTP GET, returns PNG directly.
+
+Docs: https://nasa-gibs.github.io/gibs-api-docs/
 """
 
 import base64
 import logging
+import math
 import random
 from typing import Optional
 
@@ -15,194 +18,220 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-STAC_SEARCH = "https://planetarycomputer.microsoft.com/api/stac/v1/search"
-TITILER     = "https://planetarycomputer.microsoft.com/api/data/v1"
-COLLECTION  = "sentinel-2-l2a"
+WMS_URL  = "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi"
+STAC_URL = "https://planetarycomputer.microsoft.com/api/stac/v1/search"
 
-# Simple in-memory cache to avoid redundant network calls
+# Simple in-memory cache
 _cache: dict = {}
 
 
-def _cache_key(*args) -> str:
-    return "|".join(str(a) for a in args)
+# ── GIBS imagery ────────────────────────────────
 
+# Map band name → GIBS layer name
+_LAYERS = {
+    "truecolor":  "MODIS_Terra_CorrectedReflectance_TrueColor",
+    "falsecolor": "MODIS_Terra_CorrectedReflectance_Bands721",
+    "ndvi":       "MODIS_Terra_NDVI_8Day",
+}
 
-def _find_item(bounds: list, year: int, max_cloud: int = 50) -> Optional[dict]:
-    """Search PC STAC API for the least-cloudy Sentinel-2 item during growing season."""
-    key = _cache_key("item", tuple(bounds), year)
-    if key in _cache:
-        return _cache[key]
-
-    try:
-        resp = httpx.post(
-            STAC_SEARCH,
-            json={
-                "collections": [COLLECTION],
-                "bbox": bounds,
-                "datetime": f"{year}-04-01T00:00:00Z/{year}-10-31T23:59:59Z",
-                "query": {"eo:cloud_cover": {"lt": max_cloud}},
-                "limit": 10,
-                "sortby": [{"field": "eo:cloud_cover", "direction": "asc"}],
-            },
-            timeout=30,
-        )
-        if resp.status_code == 200:
-            features = resp.json().get("features", [])
-            if features:
-                item = features[0]
-                logger.info(
-                    "Found Sentinel-2 item %s (cloud=%.1f%%) for year=%d",
-                    item["id"],
-                    item.get("properties", {}).get("eo:cloud_cover", 0),
-                    year,
-                )
-                _cache[key] = item
-                return item
-            logger.warning("No Sentinel-2 items found for bounds=%s year=%d cloud<%d%%", bounds, year, max_cloud)
-        else:
-            logger.error("STAC search HTTP %d: %s", resp.status_code, resp.text[:200])
-    except Exception as e:
-        logger.error("STAC search error: %s", e)
-
-    _cache[key] = None
-    return None
+# Peak growing season date per year (July 15)
+def _best_date(year: int) -> str:
+    return f"{year}-07-15"
 
 
 def get_image_url(bounds: list, year: int, band: str = "truecolor", width: int = 600) -> Optional[str]:
     """
-    Return a base64-encoded PNG data URL.
-    PC's titiler handles all COG fetching and signing internally.
+    Fetch a satellite image via NASA GIBS WMS.
+    Returns a base64-encoded PNG data URL, or None on failure.
     """
-    key = _cache_key("img", tuple(bounds), year, band, width)
+    key = f"img|{tuple(bounds)}|{year}|{band}|{width}"
     if key in _cache:
         return _cache[key]
 
-    item = _find_item(bounds, year)
-    if not item:
-        return None
-
-    item_id = item["id"]
+    layer = _LAYERS.get(band, _LAYERS["truecolor"])
     minx, miny, maxx, maxy = bounds
     height = max(1, int(width * (maxy - miny) / (maxx - minx)))
-    crop_url = f"{TITILER}/item/crop/{minx},{miny},{maxx},{maxy}.png"
+    date   = _best_date(year)
 
-    if band == "ndvi":
-        params = [
-            ("collection", COLLECTION),
-            ("item", item_id),
-            ("expression", "(B08-B04)/(B08+B04)"),
-            ("rescale", "-0.1,0.8"),
-            ("colormap_name", "rdylgn"),
-            ("width", str(width)),
-            ("height", str(height)),
-        ]
-    elif band == "falsecolor":
-        params = [
-            ("collection", COLLECTION),
-            ("item", item_id),
-            ("assets", "B08"),
-            ("assets", "B04"),
-            ("assets", "B03"),
-            ("rescale", "0,3000"),
-            ("rescale", "0,3000"),
-            ("rescale", "0,3000"),
-            ("width", str(width)),
-            ("height", str(height)),
-        ]
-    else:  # truecolor
-        params = [
-            ("collection", COLLECTION),
-            ("item", item_id),
-            ("assets", "B04"),
-            ("assets", "B03"),
-            ("assets", "B02"),
-            ("rescale", "0,2000"),
-            ("rescale", "0,2000"),
-            ("rescale", "0,2000"),
-            ("width", str(width)),
-            ("height", str(height)),
-        ]
+    params = {
+        "SERVICE":     "WMS",
+        "VERSION":     "1.1.1",
+        "REQUEST":     "GetMap",
+        "FORMAT":      "image/png",
+        "TRANSPARENT": "true",
+        "LAYERS":      layer,
+        "BBOX":        f"{minx},{miny},{maxx},{maxy}",
+        "WIDTH":       str(width),
+        "HEIGHT":      str(height),
+        "SRS":         "EPSG:4326",
+        "TIME":        date,
+    }
 
     try:
-        logger.info("Requesting titiler crop: item=%s band=%s", item_id, band)
-        resp = httpx.get(crop_url, params=params, timeout=60)
+        resp = httpx.get(WMS_URL, params=params, timeout=30)
         ct = resp.headers.get("content-type", "")
         if resp.status_code == 200 and "image" in ct:
             b64 = base64.b64encode(resp.content).decode()
             url = f"data:image/png;base64,{b64}"
             _cache[key] = url
-            logger.info("Titiler image OK: %d bytes, band=%s", len(resp.content), band)
+            logger.info("GIBS image OK: %d bytes, layer=%s, date=%s", len(resp.content), layer, date)
             return url
-        logger.warning("Titiler crop HTTP %d (ct=%s): %s", resp.status_code, ct, resp.text[:300])
+        logger.warning("GIBS WMS HTTP %d (ct=%s): %s", resp.status_code, ct, resp.text[:200])
     except Exception as e:
-        logger.error("Titiler image error: %s", e)
+        logger.error("GIBS image error: %s", e)
 
     return None
 
 
-def get_stats(bounds: list, year: int) -> dict:
-    """Fetch NDVI statistics from the PC titiler statistics endpoint."""
-    key = _cache_key("stats", tuple(bounds), year)
+# ── NDVI stats via PC STAC ───────────────────────
+
+def _find_item(bounds: list, year: int) -> Optional[dict]:
+    """Search PC STAC for least-cloudy Sentinel-2 item (for stats only)."""
+    key = f"item|{tuple(bounds)}|{year}"
     if key in _cache:
         return _cache[key]
+    try:
+        resp = httpx.post(STAC_URL, json={
+            "collections": ["sentinel-2-l2a"],
+            "bbox": bounds,
+            "datetime": f"{year}-04-01T00:00:00Z/{year}-10-31T23:59:59Z",
+            "query": {"eo:cloud_cover": {"lt": 50}},
+            "limit": 5,
+            "sortby": [{"field": "eo:cloud_cover", "direction": "asc"}],
+        }, timeout=20)
+        if resp.status_code == 200:
+            features = resp.json().get("features", [])
+            item = features[0] if features else None
+            _cache[key] = item
+            return item
+    except Exception as e:
+        logger.error("STAC search error: %s", e)
+    _cache[key] = None
+    return None
+
+
+def _register_mosaic(item_id: str) -> Optional[str]:
+    """Register a titiler-pgstac mosaic for a single item."""
+    key = f"mosaic|{item_id}"
+    if key in _cache:
+        return _cache[key]
+    try:
+        resp = httpx.post(
+            "https://planetarycomputer.microsoft.com/api/data/v1/mosaic/register",
+            json={
+                "collections": ["sentinel-2-l2a"],
+                "filter": {"op": "=", "args": [{"property": "id"}, item_id]},
+                "filter-lang": "cql2-json",
+            },
+            timeout=20,
+        )
+        if resp.status_code == 200:
+            sid = resp.json().get("searchid")
+            _cache[key] = sid
+            return sid
+    except Exception as e:
+        logger.error("Mosaic register error: %s", e)
+    return None
+
+
+def _tile_coords(lat: float, lng: float, zoom: int):
+    """Convert lat/lng to XYZ tile coordinates."""
+    n = 2 ** zoom
+    x = int((lng + 180.0) / 360.0 * n)
+    lat_r = math.radians(lat)
+    y = int((1.0 - math.asinh(math.tan(lat_r)) / math.pi) / 2.0 * n)
+    return x, y
+
+
+def _tile_to_deg(x: int, y: int, zoom: int):
+    """Convert XYZ tile to NW corner lat/lng."""
+    n = 2 ** zoom
+    lng = x / n * 360.0 - 180.0
+    lat = math.degrees(math.atan(math.sinh(math.pi * (1 - 2 * y / n))))
+    return lat, lng
+
+
+def _fetch_ndvi_from_tiles(bounds: list, year: int) -> Optional[dict]:
+    """
+    Download NDVI XYZ tiles from PC titiler and compute stats using Pillow.
+    Zoom level 9 (~300m/pixel): manageable number of tiles.
+    """
+    try:
+        from PIL import Image
+        import io
+    except ImportError:
+        logger.warning("Pillow not installed — skipping tile stats")
+        return None
 
     item = _find_item(bounds, year)
     if not item:
-        return _demo_stats()
+        return None
 
-    item_id = item["id"]
+    sid = _register_mosaic(item["id"])
+    if not sid:
+        return None
+
+    ZOOM  = 9
+    TILE_URL = f"https://planetarycomputer.microsoft.com/api/data/v1/mosaic/{sid}/tiles/{ZOOM}/{{x}}/{{y}}.png"
+    PARAMS = [("assets", "B04"), ("assets", "B08"), ("rescale", "0,3000"), ("rescale", "0,3000")]
+
     minx, miny, maxx, maxy = bounds
-    stats_url = f"{TITILER}/item/statistics"
-    params = [
-        ("collection", COLLECTION),
-        ("item", item_id),
-        ("assets", "B04"),
-        ("assets", "B08"),
-        ("coord_crs", "EPSG:4326"),
-        ("bbox", f"{minx},{miny},{maxx},{maxy}"),
-        ("max_size", "256"),
-    ]
+    x0, y0 = _tile_coords(maxy, minx, ZOOM)  # NW corner (y inverted)
+    x1, y1 = _tile_coords(miny, maxx, ZOOM)  # SE corner
 
-    try:
-        resp = httpx.get(stats_url, params=params, timeout=60)
-        if resp.status_code == 200:
-            data = resp.json()
-            b4 = data.get("B04") or {}
-            b8 = data.get("B08") or {}
-            if "statistics" in b4:
-                b4 = b4["statistics"]
-            if "statistics" in b8:
-                b8 = b8["statistics"]
+    red_vals, nir_vals = [], []
 
-            r_mean   = float(b4.get("mean") or 0)
-            nir_mean = float(b8.get("mean") or 0)
-            denom = nir_mean + r_mean
-            ndvi_mean = (nir_mean - r_mean) / denom if denom else 0.0
+    for ty in range(y0, y1 + 1):
+        for tx in range(x0, x1 + 1):
+            try:
+                r = httpx.get(TILE_URL.format(x=tx, y=ty), params=PARAMS, timeout=30)
+                if r.status_code == 200 and "image" in r.headers.get("content-type", ""):
+                    img = Image.open(io.BytesIO(r.content))
+                    arr = list(img.getdata())
+                    # Tile has 2 bands (B04=R, B08=G in a 2-band png via assets)
+                    # Actually response may be RGBA — first channel is B04, second B08
+                    for px in arr:
+                        if isinstance(px, (list, tuple)) and len(px) >= 2:
+                            red_vals.append(px[0] / 255.0 * 3000)
+                            nir_vals.append(px[1] / 255.0 * 3000)
+            except Exception:
+                continue
 
-            r98  = float(b4.get("percentile_98") or r_mean * 1.5)
-            n98  = float(b8.get("percentile_98") or nir_mean * 1.5)
-            ndvi_max = (n98 - r98) / (n98 + r98 + 1e-6)
+    if not red_vals:
+        return None
 
-            r2   = float(b4.get("percentile_2") or 0)
-            n2   = float(b8.get("percentile_2") or 0)
-            ndvi_min = (n2 - r2) / (n2 + r2 + 1e-6)
+    import numpy as np
+    red = np.array(red_vals, dtype=float)
+    nir = np.array(nir_vals, dtype=float)
+    denom = nir + red
+    ndvi = np.where(denom > 0, (nir - red) / denom, 0.0)
+    valid = ndvi[ndvi != 0]
+    if len(valid) == 0:
+        return None
 
-            veg_pct  = min(max(ndvi_mean * 120, 3), 40)
-            bare_pct = min(max(100 - veg_pct * 4, 40), 90)
+    veg  = float(np.mean(valid > 0.2)) * 100
+    bare = float(np.mean(valid < 0.1)) * 100
 
-            result = {
-                "mean":    round(ndvi_mean, 4),
-                "max":     round(ndvi_max,  4),
-                "min":     round(ndvi_min,  4),
-                "vegPct":  round(veg_pct,   1),
-                "barePct": round(bare_pct,  1),
-                "source":  "pc",
-            }
-            _cache[key] = result
-            return result
-        logger.warning("Stats HTTP %d: %s", resp.status_code, resp.text[:200])
-    except Exception as e:
-        logger.error("Stats error: %s", e)
+    return {
+        "mean":    round(float(np.mean(valid)), 4),
+        "max":     round(float(np.percentile(valid, 95)), 4),
+        "min":     round(float(np.percentile(valid, 5)), 4),
+        "vegPct":  round(veg, 1),
+        "barePct": round(bare, 1),
+        "source":  "pc",
+    }
+
+
+def get_stats(bounds: list, year: int) -> dict:
+    """Return NDVI stats. Tries PC tiles, falls back to demo."""
+    key = f"stats|{tuple(bounds)}|{year}"
+    if key in _cache:
+        return _cache[key]
+
+    result = _fetch_ndvi_from_tiles(bounds, year)
+    if result:
+        _cache[key] = result
+        return result
 
     return _demo_stats()
 

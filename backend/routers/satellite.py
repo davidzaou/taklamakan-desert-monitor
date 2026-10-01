@@ -98,75 +98,26 @@ def _svc():
 
 
 @router.get("/debug")
-async def satellite_debug(request: Request):
-    """Test PC STAC + titiler connectivity — remove after debugging."""
+async def satellite_debug(request: Request):  # noqa: C901
+    """Test NASA GIBS WMS connectivity."""
     import httpx, base64
-    test_bounds = [79.5, 36.8, 80.5, 37.5]
-    result = {}
-
-    # Step 1: STAC search
     try:
-        r = httpx.post(
-            "https://planetarycomputer.microsoft.com/api/stac/v1/search",
-            json={
-                "collections": ["sentinel-2-l2a"],
-                "bbox": test_bounds,
-                "datetime": "2024-04-01T00:00:00Z/2024-10-31T23:59:59Z",
-                "query": {"eo:cloud_cover": {"lt": 50}},
-                "limit": 3,
-            },
-            timeout=20,
-        )
-        features = r.json().get("features", []) if r.status_code == 200 else []
-        item_id = features[0]["id"] if features else None
-        result["stac"] = {"status": r.status_code, "count": len(features), "item_id": item_id}
-    except Exception as e:
-        result["stac"] = {"status": "exception", "error": str(e)}
-        return result
-
-    if not item_id:
-        result["titiler"] = "skipped — no items found"
-        return result
-
-    # Step 2: Register mosaic search for this specific item
-    TITILER = "https://planetarycomputer.microsoft.com/api/data/v1"
-    minx, miny, maxx, maxy = test_bounds
-    try:
-        reg = httpx.post(
-            f"{TITILER}/mosaic/register",
-            json={
-                "collections": ["sentinel-2-l2a"],
-                "filter": {"op": "=", "args": [{"property": "id"}, item_id]},
-                "filter-lang": "cql2-json",
-            },
-            timeout=20,
-        )
-        result["register"] = {"status": reg.status_code, "body": reg.json() if reg.status_code < 300 else reg.text[:200]}
-        if reg.status_code != 200:
-            return result
-        search_id = reg.json().get("searchid") or reg.json().get("id")
-    except Exception as e:
-        result["register"] = {"status": "exception", "error": str(e)}
-        return result
-
-    # Step 3: Request bbox image from mosaic
-    try:
-        bbox_url = f"{TITILER}/mosaic/{search_id}/bbox/{minx},{miny},{maxx},{maxy}.png"
-        t = httpx.get(bbox_url, params=[
-            ("assets", "B04"), ("assets", "B03"), ("assets", "B02"),
-            ("rescale", "0,2000"), ("rescale", "0,2000"), ("rescale", "0,2000"),
-            ("width", "256"), ("height", "150"),
-        ], timeout=60)
-        result["titiler"] = {
-            "status": t.status_code,
-            "content_type": t.headers.get("content-type"),
-            "bytes": len(t.content),
-            "error": t.text[:300] if t.status_code != 200 else None,
+        r = httpx.get("https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi", params={
+            "SERVICE": "WMS", "VERSION": "1.1.1", "REQUEST": "GetMap",
+            "FORMAT": "image/png", "LAYERS": "MODIS_Terra_CorrectedReflectance_TrueColor",
+            "BBOX": "79.5,36.8,80.5,37.5", "WIDTH": "256", "HEIGHT": "179",
+            "SRS": "EPSG:4326", "TIME": "2024-07-15",
+        }, timeout=30)
+        ct = r.headers.get("content-type", "")
+        return {
+            "gibs_status": r.status_code,
+            "content_type": ct,
+            "bytes": len(r.content),
+            "is_image": "image" in ct,
+            "error": r.text[:200] if "image" not in ct else None,
         }
     except Exception as e:
-        result["titiler"] = {"status": "exception", "error": str(e)}
-
-    return result
+        return {"gibs_status": "exception", "error": str(e)}
 
 
 @router.post("/image")
