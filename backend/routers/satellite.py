@@ -99,11 +99,14 @@ def _svc():
 
 @router.get("/debug")
 async def satellite_debug(request: Request):
-    """Test PC STAC connectivity — remove after debugging."""
-    import httpx
+    """Test PC STAC + titiler connectivity — remove after debugging."""
+    import httpx, base64
     test_bounds = [79.5, 36.8, 80.5, 37.5]
+    result = {}
+
+    # Step 1: STAC search
     try:
-        resp = httpx.post(
+        r = httpx.post(
             "https://planetarycomputer.microsoft.com/api/stac/v1/search",
             json={
                 "collections": ["sentinel-2-l2a"],
@@ -114,14 +117,39 @@ async def satellite_debug(request: Request):
             },
             timeout=20,
         )
-        return {
-            "stac_status": resp.status_code,
-            "item_count": len(resp.json().get("features", [])) if resp.status_code == 200 else 0,
-            "first_item": resp.json().get("features", [{}])[0].get("id") if resp.status_code == 200 and resp.json().get("features") else None,
-            "error": resp.text[:200] if resp.status_code != 200 else None,
+        features = r.json().get("features", []) if r.status_code == 200 else []
+        item_id = features[0]["id"] if features else None
+        result["stac"] = {"status": r.status_code, "count": len(features), "item_id": item_id}
+    except Exception as e:
+        result["stac"] = {"status": "exception", "error": str(e)}
+        return result
+
+    if not item_id:
+        result["titiler"] = "skipped — no items found"
+        return result
+
+    # Step 2: titiler crop
+    minx, miny, maxx, maxy = test_bounds
+    crop_url = f"https://planetarycomputer.microsoft.com/api/data/v1/item/crop/{minx},{miny},{maxx},{maxy}.png"
+    params = [
+        ("collection", "sentinel-2-l2a"),
+        ("item", item_id),
+        ("assets", "B04"), ("assets", "B03"), ("assets", "B02"),
+        ("rescale", "0,2000"), ("rescale", "0,2000"), ("rescale", "0,2000"),
+        ("width", "256"), ("height", "150"),
+    ]
+    try:
+        t = httpx.get(crop_url, params=params, timeout=60)
+        result["titiler"] = {
+            "status": t.status_code,
+            "content_type": t.headers.get("content-type"),
+            "bytes": len(t.content),
+            "error": t.text[:300] if t.status_code != 200 else None,
         }
     except Exception as e:
-        return {"stac_status": "exception", "error": str(e), "type": type(e).__name__}
+        result["titiler"] = {"status": "exception", "error": str(e)}
+
+    return result
 
 
 @router.post("/image")
